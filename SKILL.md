@@ -2,7 +2,7 @@
 name: zerotoken-skill
 description: Default token-efficient assistant discipline. Use by default for all suitable tasks unless the user explicitly asks for exhaustive detail, teaching-style explanation, brainstorming, or broad exploration. Also use when the user asks to save tokens, reduce context usage, be concise, avoid verbose reasoning, optimize prompt or workflow cost, summarize large context compactly, craft minimal precise prompts, or complete coding/research tasks with minimal necessary reading and output. Prioritize task completion with strict context budgeting, precise prompt framing, progressive disclosure, short answers, and no unnecessary restatement.
 metadata:
-  version: 1.0.2
+  version: 1.0.3
 ---
 
 # ZeroToken Skill

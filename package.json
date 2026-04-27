@@ -1,13 +1,13 @@
 {
   "name": "zerotoken-skill",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "files": [
     "SKILL.md",
     "README.md",
     "CHANGELOG.md",
     "agents/"
   ],
-  "description": "Token-efficient assistant discipline. Use when the user asks to save tokens, reduce context usage, be concise, avoid verbose reasoning, optimize prompt or workflow cost, summarize large context compactly, or complete tasks with minimal necessary reading and output.",
+  "description": "Default token-efficient assistant discipline. Use by default for suitable tasks unless the user asks for exhaustive detail, brainstorming, or broad exploration.",
   "author": "phoenixlucky",
   "license": "MIT",
   "keywords": [

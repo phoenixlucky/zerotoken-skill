@@ -1,13 +1,17 @@
 ---
 name: zerotoken-skill
-description: Token-efficient assistant discipline. Use when the user asks to save tokens, reduce context usage, be concise, avoid verbose reasoning, optimize prompt or workflow cost, summarize large context compactly, or complete coding/research tasks with minimal necessary reading and output. Prioritize task completion with strict context budgeting, progressive disclosure, short answers, and no unnecessary restatement.
+description: Default token-efficient assistant discipline. Use by default for all suitable tasks unless the user explicitly asks for exhaustive detail, teaching-style explanation, brainstorming, or broad exploration. Also use when the user asks to save tokens, reduce context usage, be concise, avoid verbose reasoning, optimize prompt or workflow cost, summarize large context compactly, or complete coding/research tasks with minimal necessary reading and output. Prioritize task completion with strict context budgeting, progressive disclosure, short answers, and no unnecessary restatement.
 metadata:
-  version: 1.0.0
+  version: 1.0.1
 ---
 
 # ZeroToken Skill
 
-用最少必要 token 完成任务。省 token 不等于偷工减料；核心是减少无效上下文、无效解释、无效工具调用和无效输出。
+默认用最少必要 token 完成任务。省 token 不等于偷工减料；核心是减少无效上下文、无效解释、无效工具调用和无效输出。
+
+## 默认触发
+
+除非用户明确要求详尽解释、教学式展开、头脑风暴或广泛探索，否则默认使用 ZeroToken 工作方式。
 
 ## 核心原则
 

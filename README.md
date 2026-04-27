@@ -1,10 +1,10 @@
 # ZeroToken Skill
 
-Version: 1.0.0
+Version: 1.0.1
 
 License: MIT
 
-`ZeroToken Skill` 是一个专门约束 Agent 以**最少必要 token**完成任务的技能。
+`ZeroToken Skill` 是一个默认约束 Agent 以**最少必要 token**完成任务的技能。
 
 它不追求“看起来很短”，而是追求：
 
@@ -16,8 +16,9 @@ License: MIT
 
 ## What It Does
 
-这个 Skill 适合以下场景：
+这个 Skill 默认适用于多数任务，除非用户明确要求详尽解释、教学式展开、头脑风暴或广泛探索。它也特别适合以下场景：
 
+- 默认希望输出简洁、直接、可执行
 - 用户明确要求省 token / 简洁输出
 - 需要降低上下文消耗和提示词成本
 - 大资料总结，但只保留结论、证据、阻塞点、待办

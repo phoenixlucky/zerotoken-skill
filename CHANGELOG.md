@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] - 2026-04-27
+
+### Changed
+- Changed the skill trigger guidance so ZeroToken is the default working discipline for suitable tasks.
+- Documented exceptions for exhaustive explanation, teaching-style expansion, brainstorming, and broad exploration.
+
 ## [1.0.0] - 2026-04-27
 
 ### Added

@@ -1,0 +1,4 @@
+interface:
+  display_name: "ZeroToken"
+  short_description: "用最少必要上下文和输出完成任务"
+  default_prompt: "请用 ZeroToken 方式处理：先完成任务，只保留必要上下文、关键依据和最短可执行输出。"

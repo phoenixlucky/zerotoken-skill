@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2] - 2026-04-27
+
+### Added
+- Added guidance for crafting the shortest precise prompt needed to solve the user's problem.
+- Added prompt framing rules for goal, input, constraints, output format, and acceptance criteria.
+
 ## [1.0.1] - 2026-04-27
 
 ### Changed

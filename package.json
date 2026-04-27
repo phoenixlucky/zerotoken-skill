@@ -1,19 +1,20 @@
 {
   "name": "zerotoken-skill",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "files": [
     "SKILL.md",
     "README.md",
     "CHANGELOG.md",
     "agents/"
   ],
-  "description": "Default token-efficient assistant discipline. Use by default for suitable tasks unless the user asks for exhaustive detail, brainstorming, or broad exploration.",
+  "description": "Default token-efficient assistant discipline for solving tasks with minimal precise prompts, concise context, and short actionable outputs.",
   "author": "phoenixlucky",
   "license": "MIT",
   "keywords": [
     "zerotoken",
     "token-efficient",
     "prompt optimization",
+    "precise prompts",
     "context budget",
     "concise",
     "cost control",

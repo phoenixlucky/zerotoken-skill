@@ -1,6 +1,6 @@
 {
   "name": "zerotoken-skill",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "files": [
     "SKILL.md",
     "README.md",
@@ -9,31 +9,14 @@
   ],
   "description": "Default token-efficient assistant discipline for solving tasks with minimal precise prompts, concise context, and short actionable outputs.",
   "author": "phoenixlucky",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "keywords": [
     "zerotoken",
     "token-efficient",
-    "token saving",
-    "token budget",
-    "context optimization",
-    "context compression",
-    "context engineering",
-    "prompt engineering",
-    "prompt optimization",
-    "precise prompts",
-    "minimal prompts",
-    "prompt compression",
-    "agent discipline",
-    "agent workflow",
-    "default skill",
-    "progressive disclosure",
-    "context budget",
-    "concise",
-    "concise output",
-    "short answers",
-    "task completion",
-    "cost optimization",
-    "cost control",
-    "skill"
+    "prompt-engineering",
+    "context-optimization",
+    "agent-discipline",
+    "concise-output",
+    "cost-control"
   ]
 }

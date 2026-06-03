@@ -1,8 +1,8 @@
 ---
 name: zerotoken-skill
-description: Default token-efficient assistant discipline — minimal precise prompts, concise context, short actionable outputs. Default mode for all suitable tasks.
+description: Default token-efficient assistant discipline — minimal prompts, concise context, short actionable outputs.
 metadata:
-  version: 1.2.0
+  version: 1.3.0
 ---
 
 # ZeroToken Skill

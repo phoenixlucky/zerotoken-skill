@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-04-27
+
+### Changed
+- Deduplicated README.md by removing content replicated from SKILL.md; README now serves as a slim landing page.
+- Trimmed package.json keywords from 24 to 7 (removed synonyms and sub-variants).
+- Shortened SKILL.md frontmatter description for clarity.
+- Relicensed from MIT to GPL-3.0 (copyleft license for stronger openness).
+
+### Fixed
+- Removed duplicate "Added LICENSE" entry from [1.1.0] in CHANGELOG.md — LICENSE was first added in v1.2.0.
+
 ## [1.2.0] - 2026-04-27
 
 ### Added
@@ -11,7 +22,6 @@ All notable changes to this project will be documented in this file.
 ## [1.1.0] - 2026-04-27
 
 ### Added
-- Added LICENSE file (MIT) to complete open source compliance.
 - Added quick decision table mapping user request patterns → task mode → output format → tool preference.
 - Added "精准提示词模板" (precise prompt template) with compact goal/input/constraints/output format.
 - Added "ZeroToken 强化模式" section for explicit token-saving requests.

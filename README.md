@@ -27,7 +27,9 @@ git clone https://github.com/phoenixlucky/zerotoken-skill.git
 ```
 
 **方式二：从远程 Skill 仓库引用（推荐，始终获取最新版本）**
-安装这个技能 → https://clawhub.ai/phoenixlucky/zerotoken-skill
+```bash
+安装这个技能  https://clawhub.ai/phoenixlucky/zerotoken-skill
+```
 
 以下是 ZeroToken Skill 对五种主流 Agent 工具的具体强化方向。
 
@@ -244,20 +246,6 @@ git clone https://github.com/phoenixlucky/zerotoken-skill.git
 
 ---
 
-## 🚀 快速开始
-
-```bash
-# 1. 克隆仓库
-git clone https://github.com/phoenixlucky/zerotoken-skill.git
-
-# 2. 在 Reasonix 或兼容 Agent 中载入 SKILL.md
-/zerotoken-skill
-```
-
-就是这么简单。载入后 Agent 会自动按照 ZeroToken 规范工作。
-
----
-
 ## 📖 核心文档
 
 所有详细规范定义在 **[`SKILL.md`](SKILL.md)**，包括：
@@ -268,6 +256,9 @@ git clone https://github.com/phoenixlucky/zerotoken-skill.git
 - 🔄 **五种任务模式详解** — 每种模式的完整行为规范
 - ⚡ **ZeroToken 强化模式 & 退出条件**
 - 🛡️ **质量底线** — 压缩不降质的硬性要求
+
+---
+
 
 ## 🤖 Agent 预设
 

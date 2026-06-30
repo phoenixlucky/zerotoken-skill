@@ -17,16 +17,21 @@
 
 ## 🔌 平台集成指南
 
-ZeroToken Skill 可通过两种方式直接安装到你的 Agent 中：
+### 方式一
 
+请依次阅读并安装以下 Skill。
+
+ZeroToken Skill — phoenixlucky，Token 高效约束：最少 token 和精准提示完成任务，减少无效输出  
+地址：https://github.com/phoenixlucky/zerotoken-skill
+
+请根据上面每个 Skill 的「安装指令」完成安装。
+
+### 方式二：从远程 Skill 仓库引用（推荐，始终获取最新版本）
 ```bash
-# 方式一：克隆仓库，在 Agent 中载入
-git clone https://github.com/phoenixlucky/zerotoken-skill.git
-# 在 Reasonix 或兼容 Agent 中
-/zerotoken-skill
+install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 ```
 
-**方式二：从远程 Skill 仓库引用（推荐，始终获取最新版本）**
+### 方式三
 ```bash
 安装这个技能  https://clawhub.ai/phoenixlucky/zerotoken-skill
 ```
@@ -281,6 +286,16 @@ git clone https://github.com/phoenixlucky/zerotoken-skill.git
 ## 🏷️ 标签
 
 `zerotoken` `token-efficient` `prompt-engineering` `context-optimization` `agent-discipline` `ai-workflow` `token-budget` `concise-output`
+
+---
+
+## 👑 The King Skills
+
+[**The King Skills**](https://phoenixlucky.github.io/theKingSkills/) 是一个 AI Agent Skill 索引网站，收集热门且好用的 AI Agent Skill，指导各种 AI Agent 快速一键安装配置。
+
+- 🌐 **网站地址：** https://phoenixlucky.github.io/theKingSkills/
+- 📂 **覆盖范围：** 10 大分类，持续收录优质 Skill
+- 🚀 **目标：** 让用户像安装 App 一样安装 AI Agent Skill
 
 ---
 

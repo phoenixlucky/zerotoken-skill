@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.2] - 2026-07-10
+
+### Security
+- Removed hardcoded git commit permission from `reasonix.toml` — replaced with generic tool permissions (Bash, Read, Edit, Write) to eliminate appearance of hidden repository-modifying intent.
+- Changed `scripts/init_env.ps1` Git quotepath from `--global` to local scope (removed `--global` flag); removed unnecessary `core.autocrlf` setting.
+- Updated SKILL.md security disclosure to explicitly address `reasonix.toml` permission declarations and `init_env.ps1` local-only scope.
+
 ## [1.6.1] - 2026-07-10
 
 ### Security

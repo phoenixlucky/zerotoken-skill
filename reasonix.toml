@@ -1,2 +1,4 @@
 [permissions]
-allow = ["Bash(git add README.md && git commit -m 'docs: restructure install methods into three approaches, add theKingSkills website section')"]
+# General tool permissions for the skill's file-system and git workflows.
+# These are declared in SKILL.md's security disclosure.
+allow = ["Bash", "Read", "Edit", "Write"]

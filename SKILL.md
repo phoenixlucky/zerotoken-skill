@@ -2,7 +2,7 @@
 name: zerotoken-skill
 description: Default token-efficient assistant discipline — minimal prompts, concise context, short actionable outputs.
 metadata:
-  version: 1.6.1
+  version: 1.6.2
   security:
     capabilities:
       - filesystem-read: "read local files"
@@ -26,8 +26,14 @@ metadata:
 > - 批量文件编码检测与转换（scripts/fix_encoding.py）
 > - Git 配置与提交操作
 >
+> **权限声明：** `reasonix.toml` 声明了 Bash、Read、Edit、Write 通用工具权限，
+> 无特定 git commit 指令白名单。
+> **环境脚本范围：** `scripts/init_env.ps1` 仅配置当前仓库的 Git 设置（local），
+> 不修改全局 Git 配置。
+>
 > **语言说明：** 本文档以中文为主要编写语言，但 Skill 本身会自适应匹配用户的交互语言。
-> **平台说明：** 本 Skill 跨平台可用。F 模式（Windows/PowerShell 适配）仅在 Windows/PowerShell + 中文文本环境下适用，为可选模式而非默认行为。
+> **平台说明：** 本 Skill 跨平台可用。F 模式（Windows/PowerShell 适配）仅限于
+> Windows/PowerShell + 中文文本环境，为可选模式而非默认行为。
 >
 > 安装前请确认这些能力符合你的安全策略。
 

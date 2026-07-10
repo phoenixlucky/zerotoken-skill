@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2026-07-10
+
+### Added
+- Added `scripts/` directory with 4 Python utility scripts + 1 PowerShell init script:
+  - `scripts/safe_io.py` — safe file read/write module (handles UTF-8/UTF-16, write-to-file instead of print)
+  - `scripts/fix_encoding.py` — batch file encoding detection and conversion to UTF-8 (4 modes: scan/preview/convert/check-replacement)
+  - `scripts/verify_output.py` — verification result output to .txt file (replaces print to avoid GBK error)
+  - `scripts/batch_edit.py` — apply multiple replacements to one file atomically (solves edit_file consecutive edit blocking)
+  - `scripts/init_env.ps1` — Windows PowerShell environment init (git config, Python check, encoding health)
+- Added `.gitattributes` — proper line ending configuration for all file types
+- Updated SKILL.md F mode: references scripts/ tools in decision table and recommended workflow; adds "脚本工具" reference table
+
+## [1.5.0] - 2026-07-10
+
+### Added
+- Added **F. Windows/PowerShell 环境适配** task mode to SKILL.md for handling Windows PowerShell + Chinese text environment pitfalls — includes 7 known trap solutions, recommended workflow, safe file I/O template, and "what not to do" checklist.
+
 ## [1.4.0] - 2026-04-27
 
 ### Added

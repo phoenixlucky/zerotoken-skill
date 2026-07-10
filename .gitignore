@@ -1,4 +1,7 @@
 .codegraph/
 .env
-.reasonix/desktop-topic-title-sources.json
-.reasonix/desktop-topic-titles.json
+.reasonix/
+check.txt
+test_*.txt
+__pycache__/
+*.pyc

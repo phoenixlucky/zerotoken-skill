@@ -1,0 +1,31 @@
+# Auto-detect text files and use LF line endings
+* text=auto
+
+# Python scripts: LF line endings, diff-friendly
+*.py text diff=python eol=lf
+
+# Markdown: LF line endings
+*.md text eol=lf
+
+# YAML/JSON config: LF line endings
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+
+# Shell scripts: LF line endings (required for /bin/sh)
+*.sh text eol=lf
+
+# PowerShell scripts: LF line endings
+*.ps1 text eol=lf
+
+# Batch files: CRLF line endings (required by cmd.exe)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files: don't touch
+*.png binary
+*.jpg binary
+*.ico binary
+*.pdf binary
+*.db binary

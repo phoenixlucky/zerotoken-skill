@@ -2,7 +2,7 @@
 name: zerotoken-skill
 description: Default token-efficient assistant discipline — minimal prompts, concise context, short actionable outputs.
 metadata:
-  version: 1.4.0
+  version: 1.6.0
 ---
 
 # ZeroToken Skill
@@ -22,6 +22,7 @@ metadata:
 | 反复出同类 bug / 加功能越来越难 / 架构与需求不匹配 / 需要大改 | **E. 重大重构/架构调整** | 问题诊断 + 目标方案 + 迁移路线图 | ``codegraph_context`` → ``explore`` → ``codegraph_trace`` → 分批 ``read_file`` |
 | 用户明确说"省 token" | **ZeroToken 强化** | 最短可执行输出 | 同上，但跳过所有非必要探索 |
 | 用户说"详细解释/教学" | **➡ 退出 ZeroToken** | 常规详尽模式 | 不限 |
+| 当前在 Windows/PowerShell 下工作，有中文文本 | **F. Windows/PowerShell 环境适配** | 按 7 条陷阱规则调整工作流 | `write_file`(写 .py 脚本) → `python`(执行) → `git config core.quotepath false` → `complete_step`(签收) |
 
 ---
 
@@ -102,6 +103,75 @@ metadata:
 - **先理解再动手**：E 模式允许较高的 token 消耗用于阅读和理解——在诊断和设计方案阶段不做省 token 优化。
 - **不提前优化**：只重构当前确实有问题的部分，不顺手"优化"无关代码。
 - **留退出路径**：每一步都可以撤销或暂停，不做不可逆的一次性大改。
+
+### F. 🪟 Windows/PowerShell 环境适配 — "当前是 Windows/PowerShell + 中文环境"
+
+**适用条件**：当前工作在 Windows PowerShell 环境，且任务涉及中文文本（文件内容、Git 提交、日志分析等）。
+
+**不需要此模式**：macOS / Linux 环境，或完全无中文的纯英文工作流。
+
+#### 已知陷阱与解决方案
+
+| # | 陷阱 | 症状 | 解决方案 |
+|---|------|------|----------|
+| 1 | **PowerShell 与中文文本冲突** | `bash` 工具传中文给 PowerShell，`+` 被解析为字符串拼接运算符；反引号 `` ` `` 被识别为转义字符；含中文的 PowerShell 字符串报 `Missing ')'` 语法错误 | ❌ 不要直接在 `bash` 命令中嵌入含 `+` 的中文<br>✅ 改为 `write_file` 写 `.py` 脚本文件，再用 `python "script.py"` 执行 |
+| 2 | **文件编码不一致** | 部分文件（如旧中文 Markdown）实际是 UTF-16 编码；Python 默认 UTF-8 读取抛 `UnicodeDecodeError`；旧文件中已有因编码损坏产生的替换字符 `�`，导致字符串精确匹配失败 | ✅ 统一采用 UTF-8 编码读写<br>✅ 安全读取方案见下文的「安全文件读写模板」 |
+| 3 | **edit_file 同文件连续编辑阻塞** | 同一文件的多处修改，第一次 `edit_file` 后第二次被拒，错误：`fresh read required — was already modified earlier this turn` | ✅ 对同一文件的多处修改，一次性用 Python 脚本完成<br>✅ 或用 `multi_edit` 一次传入多个替换（≤5 个以内）<br>✅ 维护一个更新脚本，执行后统一验证 |
+| 4 | **Git 中文文件名转义显示** | `git diff --stat` 显示 `\xxx\xxx` 编码序列，无法直接阅读中文文件名 | ✅ 先执行 `git config core.quotepath false` |
+| 5 | **AutoResearch verification 死循环** | 验证证据已提供多次（git diff、文件检查、关键词检查），但系统始终不接受；`stale_count` 持续累积 | ✅ 使用 `complete_step` 工具签收验证步骤（`kind: "verification"`），而非仅靠 `<autoresearch-evidence>` 块。<br>✅ `complete_step` 的 verification 证据类型会被 host 正确接受并推进任务列表 |
+| 6 | **Python 控制台输出中文失败** | Python 的 `print()` 在 PowerShell 控制台下因 GBK 编码报错：`UnicodeEncodeError: 'gbk' codec can't encode character` | ✅ 不直接 `print()`，写入 `.txt` 文件后用 `read_file` 查看<br>✅ 使用 `with open(out_path, 'w', encoding='utf-8') as f: f.write(result)` |
+| 7 | **PowerShell 中 `\r\n` 转义** | PowerShell 脚本中 `` `r`n `` 的反引号被解释为换行转义符，导致语法错误 | ✅ 不在 PowerShell 中拼接含换行的多语言文本<br>✅ 改用 Python 的 `\n` 处理换行 |
+
+#### 脚本工具（scripts/ 目录）
+
+项目自带一系列实用 Python 脚本，开箱即用，覆盖 F 模式的常见操作：
+
+| 脚本 | 解决问题 | 用法示例 |
+|------|----------|----------|
+| `safe_io.py` | #2 编码不一致 / #6 无法 print 中文 | `from safe_io import safe_read, safe_write, write_result` |
+| `batch_edit.py` | #3 edit_file 连续编辑阻塞 | `python scripts/batch_edit.py file.json replacements.json` |
+| `fix_encoding.py` | #2 批量编码转换 | `python scripts/fix_encoding.py scan .` / `python scripts/fix_encoding.py convert . --backup` |
+| `verify_output.py` | #5 verification 输出 / #6 写文件替代 print | `python scripts/verify_output.py "检查项" out.txt --pass "✓ 通过"` |
+| `init_env.ps1` | #4 Git 配置 / 环境初始化 | 在新会话中 `. ./scripts/init_env.ps1` |
+
+#### 推荐工作流
+
+当处于 Windows/PowerShell + 中文环境时，按以下步骤替代默认工作流：
+
+```text
+0. （首次）."scripts/init_env.ps1" 初始化 Git + 编码环境
+1. write_file 写 Python 更新脚本（.py）
+2. python "script.py" 执行（避免 PowerShell + edit_file 的所有问题）
+3. git diff --stat 验证文件变更
+4. 用 verify_output.py 输出验证结果到 .txt 文件
+5. read_file 读取验证结果
+6. complete_step 签收 verification
+```
+
+#### 安全文件读写模板
+
+```python
+# 安全读取（兼容 UTF-8 / UTF-16 / 含损坏字符的文件）
+with open(path, 'rb') as f:
+    raw = f.read()
+try:
+    content = raw.decode('utf-8')
+except:
+    content = raw.decode('utf-8', errors='replace')
+
+# 安全写入（统一 UTF-8）
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(content)
+```
+
+#### 不做什么
+
+❌ 不在 `bash` 命令中嵌入含特殊符号（`+`、`` ` ``）的中文字符串
+❌ 不连续对同一文件进行多次 `edit_file` 调用
+❌ 不直接在 PowerShell 中用 `print()` 输出中文
+❌ 不忽略 `git config core.quotepath` 设置
+
+---
 
 ## ZeroToken 强化模式
 

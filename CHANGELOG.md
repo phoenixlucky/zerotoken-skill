@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.1] - 2026-07-10
+
+### Security
+- Added `security` metadata to SKILL.md frontmatter — explicitly declares all file system capabilities (read/write, batch-edit, encoding-conversion, git-operations) so users and hosts can review before installation.
+- Added "🛡️ 能力与安全披露" (Capabilities & Security Disclosure) section to SKILL.md — transparently documents what the skill can do beyond prompting guidance.
+- Clarified F mode (Windows/PowerShell) is conditional and optional, not default behavior — macOS/Linux users and English-only workflows do not need it.
+- Added language disclosure: documentation is primarily in Chinese but the skill adapts to the user's interaction language.
+- Fixed `scripts/fix_encoding.py` docstring: changed "默认创建 .bak 备份" to "需要 --backup 参数才会创建 .bak 备份" to match actual implementation behavior.
+
 ## [1.6.0] - 2026-07-10
 
 ### Added

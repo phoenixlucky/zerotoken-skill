@@ -2,12 +2,34 @@
 name: zerotoken-skill
 description: Default token-efficient assistant discipline — minimal prompts, concise context, short actionable outputs.
 metadata:
-  version: 1.6.0
+  version: 1.6.1
+  security:
+    capabilities:
+      - filesystem-read: "read local files"
+      - filesystem-write: "write/modify local files"
+      - batch-edit: "apply multiple text replacements to a single file"
+      - encoding-conversion: "batch file encoding detection and conversion"
+      - git-operations: "git config and commit operations"
+    permissions-declared: true
+    language: "zh-CN (documentation primary); adapts to user language"
+    platforms: "cross-platform; F mode is Windows/PowerShell specific and conditional"
 ---
 
 # ZeroToken Skill
 
 用最少必要 token 和最精准提示词完成任务。省 token ≠ 偷工减料；核心是减少无效上下文、无效解释、无效工具调用、无效输出。
+
+> **🛡️ 能力与安全披露**
+> 本 Skill 除提供提示词纪律规范外，还包含以下文件系统操作能力：
+> - 读取和修改本地文件（通过 read_file / edit_file / write_file）
+> - 批量文本替换编辑（scripts/batch_edit.py）
+> - 批量文件编码检测与转换（scripts/fix_encoding.py）
+> - Git 配置与提交操作
+>
+> **语言说明：** 本文档以中文为主要编写语言，但 Skill 本身会自适应匹配用户的交互语言。
+> **平台说明：** 本 Skill 跨平台可用。F 模式（Windows/PowerShell 适配）仅在 Windows/PowerShell + 中文文本环境下适用，为可选模式而非默认行为。
+>
+> 安装前请确认这些能力符合你的安全策略。
 
 ---
 
@@ -105,6 +127,8 @@ metadata:
 - **留退出路径**：每一步都可以撤销或暂停，不做不可逆的一次性大改。
 
 ### F. 🪟 Windows/PowerShell 环境适配 — "当前是 Windows/PowerShell + 中文环境"
+
+> **⚠️ 此模式为可选环境适配，非默认行为。** 仅当以下条件同时满足时才启用。macOS / Linux 用户或纯英文工作流完全不需要此模式。
 
 **适用条件**：当前工作在 Windows PowerShell 环境，且任务涉及中文文本（文件内容、Git 提交、日志分析等）。
 

@@ -21,7 +21,7 @@ fix_encoding.py — 批量转换文件编码为 UTF-8
     python scripts/fix_encoding.py check-replacement <directory>
 
 安全保证：
-    - convert 模式默认创建 .bak 备份
+    - convert 模式需要 --backup 参数才会创建 .bak 备份
     - 只修改匹配 --ext 的文件
     - preview 模式不做任何写入
 """

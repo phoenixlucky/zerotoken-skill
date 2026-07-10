@@ -4,7 +4,7 @@
 
 **让 Agent 用最少的 token 做最准的事**
 
-[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg)]()
 [![License](https://img.shields.io/badge/license-GPL--3.0-green.svg)](LICENSE)
 [![Author](https://img.shields.io/badge/author-phoenixlucky-orange.svg)]()
 </div>
@@ -45,7 +45,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 | 强化维度 | 说明 |
 |---------|------|
 | **🧠 原生 Skill 引擎** | Reasonix 的 Skill 机制原生支持本规范，载入即用，无需额外配置 |
-| **🎯 自动模式匹配** | 根据请求特征自动选择五种任务模式之一，无需手动指定 |
+| **🎯 自动模式匹配** | 根据请求特征自动选择六种任务模式之一（A-F），无需手动指定 |
 | **🔧 工具链优化** | 按模式限制工具调用范围（简单问答不调工具、多文件任务分批加载） |
 | **📄 输出规范** | 结论先行、不复述、要点+位置 等输出模板内嵌为默认行为 |
 | **💰 Token 预算策略** | 按模式自动分配上下文深度：简单问答极低预算，重大重构允许高消耗 |
@@ -98,7 +98,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 
 ## 📋 能力一览
 
-根据你的请求特征，ZeroToken Skill 自动匹配五种任务模式。每种模式都有专属的**工具链**、**输出格式**和 **token 预算策略**：
+根据你的请求特征，ZeroToken Skill 自动匹配六种任务模式。每种模式都有专属的**工具链**、**输出格式**和 **token 预算策略**：
 
 | 模式 | 一句话概括 | Token 成本 |
 |------|-----------|:----------:|
@@ -107,6 +107,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 | **C. 📦 多文件任务** | 短计划 → 分批加载 → 按步推进 | 🟡 中 |
 | **D. 📚 大资料总结** | 要点 + 证据位置，不逐段复述 | 🟠 中高 |
 | **E. 🏗️ 重大架构调整** | 诊断根因 → 确认方案 → 增量迁移 | 🔴 高（但可控） |
+| **F. 🪟 Windows/PowerShell 环境适配** | 7 条陷阱规则 + 脚本工具，解决中文+Windows 工作流痛点 | 🟢 低 |
 
 ---
 
@@ -253,12 +254,14 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 
 ## 📖 核心文档
 
-所有详细规范定义在 **[`SKILL.md`](SKILL.md)**，包括：
+所有详细规范定义在 **[`SKILL.md`](SKILL.md)**，配套脚本工具在 **`scripts/`** 目录：
 
 - 📐 **快速决策表** — 按请求类型匹配模式与工具链
 - 🧭 **核心原则** — 先分类再预算、压缩提示词、渐进读取、先给结果、不复述
 - 📝 **精准提示词模板** — 目标 → 输入 → 约束 → 输出
-- 🔄 **五种任务模式详解** — 每种模式的完整行为规范
+- 🔄 **六种任务模式详解 (A-F)** — 每种模式的完整行为规范
+- 🪟 **F. Windows/PowerShell 环境适配** — 7 条已知陷阱与解决方案
+- 🛠️ **scripts/ 工具集** — `safe_io.py`, `batch_edit.py`, `fix_encoding.py`, `verify_output.py`, `init_env.ps1`
 - ⚡ **ZeroToken 强化模式 & 退出条件**
 - 🛡️ **质量底线** — 压缩不降质的硬性要求
 

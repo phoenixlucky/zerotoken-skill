@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.2] - 2026-07-22
+
+### Fixed
+- 重新发布 v1.7.2 以修复 ClawHub 版本列表未更新的问题（前版 publish 成功但未写入数据库）
+- 内容与 v1.7.0 一致
+
 ## [1.7.1] - 2026-07-22
 
 ### Fixed

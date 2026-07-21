@@ -2,7 +2,7 @@
 name: zerotoken-skill
 description: Token-efficient assistant discipline with optional file-system utilities (file editing, encoding conversion, git helpers) — transparently declared in security disclosure below.
 metadata:
-  version: 1.7.1
+  version: 1.7.2
   security:
     capabilities:
       - filesystem-read: "read local files"

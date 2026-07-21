@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.1] - 2026-07-22
+
+### Fixed
+- 重新发布以刷新 ClawHub 页面展示版本（技术性 bump，内容与 v1.7.0 一致）
+
 ## [1.7.0] - 2026-07-21
 
 ### Security

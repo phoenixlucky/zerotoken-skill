@@ -2,13 +2,14 @@
 name: zerotoken-skill
 description: Default token-efficient assistant discipline — minimal prompts, concise context, short actionable outputs.
 metadata:
-  version: 1.6.2
+  version: 1.7.0
   security:
     capabilities:
       - filesystem-read: "read local files"
       - filesystem-write: "write/modify local files"
       - batch-edit: "apply multiple text replacements to a single file"
       - encoding-conversion: "batch file encoding detection and conversion"
+      - gbk-contamination-detection: "detect and repair GBK-contaminated UTF-8 files"
       - git-operations: "git config and commit operations"
     permissions-declared: true
     language: "zh-CN (documentation primary); adapts to user language"
@@ -24,6 +25,8 @@ metadata:
 > - 读取和修改本地文件（通过 read_file / edit_file / write_file）
 > - 批量文本替换编辑（scripts/batch_edit.py）
 > - 批量文件编码检测与转换（scripts/fix_encoding.py）
+> - 安全文件追加（scripts/safe_io.py — safe_append）
+> - GBK 编码污染检测与修复（scripts/detect_gbk_contamination.py）
 > - Git 配置与提交操作
 >
 > **权限声明：** `reasonix.toml` 声明了 Bash、Read、Edit、Write 通用工具权限，
@@ -50,7 +53,7 @@ metadata:
 | 反复出同类 bug / 加功能越来越难 / 架构与需求不匹配 / 需要大改 | **E. 重大重构/架构调整** | 问题诊断 + 目标方案 + 迁移路线图 | ``codegraph_context`` → ``explore`` → ``codegraph_trace`` → 分批 ``read_file`` |
 | 用户明确说"省 token" | **ZeroToken 强化** | 最短可执行输出 | 同上，但跳过所有非必要探索 |
 | 用户说"详细解释/教学" | **➡ 退出 ZeroToken** | 常规详尽模式 | 不限 |
-| 当前在 Windows/PowerShell 下工作，有中文文本 | **F. Windows/PowerShell 环境适配** | 按 7 条陷阱规则调整工作流 | `write_file`(写 .py 脚本) → `python`(执行) → `git config core.quotepath false` → `complete_step`(签收) |
+| 当前在 Windows/PowerShell 下工作，有中文文本 | **F. Windows/PowerShell 环境适配** | 按 8 条陷阱规则调整工作流 | `write_file`(写 .py 脚本) → `python`(执行) → `git config core.quotepath false` → `complete_step`(签收) |
 
 ---
 
@@ -61,6 +64,7 @@ metadata:
 3. **渐进读取** — 先定位（`search_content`/`glob`），再局部读，读完即停。
 4. **先给结果** — 结论或完成状态先行；解释、推理按需补充。
 5. **不复述** — 不重复用户问题、不写礼貌铺垫、不解释常识。
+6. **plan 只写顶层步骤，不写子弹** — plan 模式下每层 bullet 列表项都会被 todo 系统注册为独立待办项，必须严格线性顺序签收。<br>✅ 每个 phase 写 1 行顶层步骤（共 2-5 个），细节写在说明文字中而非子 bullet。<br>✅ 示例（正确）：<br>    `1. safe_io.py 新增 safe_append 函数 — 使用 Python open('a', encoding='utf-8') 替代 Add-Content`<br>❌ 示例（错误，会生成 10+ 待办项）：<br>    `1. safe_io.py 新增 safe_append<br>       - 实现函数<br>       - 更新文档字符串<br>       - 导出 __all__`<br>若已陷入子步骤阻塞，用 `complete_step({ step_index: N })` 跳过中间项直接签收当前卡住的项。
 
 ## 精准提示词模板
 
@@ -86,7 +90,7 @@ metadata:
 4. 跑最小相关验证（lint / typecheck / single test）
 
 ### C. 多文件任务
-1. 输出 3-5 步短计划（不交 plan 审批，直接推进）
+1. 输出 3-5 步短计划（不交 plan 审批，直接推进）— **每步只写 1 行顶层描述，不用 bullet 子步骤**，否则 todo 系统会将每个 bullet 注册为独立待办项，导致后续 complete_step 必须逐个签收才能推进
 2. 每步仅加载当前决策需要的文件
 3. 发现的非关键问题记为事实清单而非当场修复
 4. 最终只说明完成内容、关键改动、验证结果
@@ -151,6 +155,7 @@ metadata:
 | 5 | **AutoResearch verification 死循环** | 验证证据已提供多次（git diff、文件检查、关键词检查），但系统始终不接受；`stale_count` 持续累积 | ✅ 使用 `complete_step` 工具签收验证步骤（`kind: "verification"`），而非仅靠 `<autoresearch-evidence>` 块。<br>✅ `complete_step` 的 verification 证据类型会被 host 正确接受并推进任务列表 |
 | 6 | **Python 控制台输出中文失败** | Python 的 `print()` 在 PowerShell 控制台下因 GBK 编码报错：`UnicodeEncodeError: 'gbk' codec can't encode character` | ✅ 不直接 `print()`，写入 `.txt` 文件后用 `read_file` 查看<br>✅ 使用 `with open(out_path, 'w', encoding='utf-8') as f: f.write(result)` |
 | 7 | **PowerShell 中 `\r\n` 转义** | PowerShell 脚本中 `` `r`n `` 的反引号被解释为换行转义符，导致语法错误 | ✅ 不在 PowerShell 中拼接含换行的多语言文本<br>✅ 改用 Python 的 `\n` 处理换行 |
+| 8 | **PowerShell Add-Content 使用 GBK 编码污染 UTF-8 文件** | 用 `Add-Content` 向 UTF-8 文件追加中文后，新内容变为乱码（`ʮ�ġ�����ê�㷨`），文件末尾出现 `0x81` 等无效 UTF-8 字节<br>根因：PowerShell 的 `Add-Content` 默认使用系统区域编码（Windows 中文版为 GBK）写入 | ❌ **禁止直接使用 PowerShell Add-Content 追加含中文的内容**<br>✅ 使用 Python 安全追加：`open('file.md', 'a', encoding='utf-8').write('内容')`<br>✅ 或用 `safe_io.py` 的 `safe_append()` 函数<br>✅ 已污染的⽂件用 `detect_gbk_contamination.py` 检测修复 |
 
 #### 脚本工具（scripts/ 目录）
 
@@ -158,7 +163,8 @@ metadata:
 
 | 脚本 | 解决问题 | 用法示例 |
 |------|----------|----------|
-| `safe_io.py` | #2 编码不一致 / #6 无法 print 中文 | `from safe_io import safe_read, safe_write, write_result` |
+| `safe_io.py` | #2 编码不一致 / #6 无法 print 中文 / #8 安全追加替代 Add-Content | `from safe_io import safe_read, safe_write, safe_append, write_result` |
+| `detect_gbk_contamination.py` | #8 检测修复 GBK 编码污染 | `python scripts/detect_gbk_contamination.py scan .` / `python scripts/detect_gbk_contamination.py fix . --backup` |
 | `batch_edit.py` | #3 edit_file 连续编辑阻塞 | `python scripts/batch_edit.py file.json replacements.json` |
 | `fix_encoding.py` | #2 批量编码转换 | `python scripts/fix_encoding.py scan .` / `python scripts/fix_encoding.py convert . --backup` |
 | `verify_output.py` | #5 verification 输出 / #6 写文件替代 print | `python scripts/verify_output.py "检查项" out.txt --pass "✓ 通过"` |
@@ -192,6 +198,12 @@ except:
 # 安全写入（统一 UTF-8）
 with open(path, 'w', encoding='utf-8') as f:
     f.write(content)
+
+# 安全追加（替代 Add-Content，避免 GBK 污染）
+with open(path, 'a', encoding='utf-8') as f:
+    f.write(content)
+    if not content.endswith('\n'):
+        f.write('\n')
 ```
 
 #### 不做什么
@@ -200,6 +212,7 @@ with open(path, 'w', encoding='utf-8') as f:
 ❌ 不连续对同一文件进行多次 `edit_file` 调用
 ❌ 不直接在 PowerShell 中用 `print()` 输出中文
 ❌ 不忽略 `git config core.quotepath` 设置
+❌ **不使用 PowerShell 的 `Add-Content` 追加含中文的内容** — 改用 Python `open(path, 'a', encoding='utf-8')` 或 `safe_io.safe_append()`
 
 ---
 

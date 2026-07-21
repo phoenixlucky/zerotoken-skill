@@ -4,12 +4,14 @@ safe_io.py — 安全文件读写工具模块
 解决的问题：
 - 文件编码不一致（UTF-8 / UTF-16 / 含损坏字符）
 - Python 控制台输出中文在 GBK 环境下失败
+- PowerShell Add-Content 用 GBK 编码污染 UTF-8 文件
 
 用法：
-    from safe_io import safe_read, safe_write, write_result
+    from safe_io import safe_read, safe_write, safe_append, write_result
 
     content = safe_read("path/to/file.md")
     safe_write("path/to/file.md", content)
+    safe_append("path/to/file.md", "追加内容")   # 替代 Add-Content
     write_result("验证通过", out_path="verify_result.txt")
 """
 
@@ -73,6 +75,37 @@ def safe_write(path: str, content: str) -> None:
     os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
     with open(path, 'w', encoding='utf-8') as f:
         f.write(content)
+
+
+def safe_append(path: str, content: str) -> str:
+    """安全追加内容到文件，统一使用 UTF-8 编码。
+
+    专为替代 PowerShell Add-Content 设计。Add-Content 在 Windows 中文版下
+    默认使用 GBK 编码写入，会与文件原有的 UTF-8 编码混合导致乱码。
+
+    始终使用 Python open(path, 'a', encoding='utf-8')，确保编码一致。
+
+    Args:
+        path: 文件路径（父目录不存在时自动创建）
+        content: 要追加的内容（会自动在末尾加换行）
+
+    Returns:
+        写入文件的绝对路径
+
+    Example:
+        safe_append("笔记.md", "## 新的章节")
+        # 等价于 PowerShell 的 Add-Content -Path 笔记.md -Value "## 新的章节"
+        # 但使用 UTF-8 而非 GBK
+    """
+    os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
+    with open(path, 'a', encoding='utf-8') as f:
+        f.write(content)
+        if not content.endswith('\n'):
+            f.write('\n')
+
+    abs_path = os.path.abspath(path)
+    safe_print(f"已追加到: {abs_path}")
+    return abs_path
 
 
 def write_result(result: str, out_path: str = "verify_result.txt",

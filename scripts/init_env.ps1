@@ -49,7 +49,8 @@ try {
 
 # 4. 提示可用工具
 Write-Host "[4/4] 可用脚本工具" -ForegroundColor Cyan
-Write-Host "  • python scripts/safe_io.py          — 安全文件读写" -ForegroundColor Gray
+Write-Host "  • python scripts/safe_io.py          — 安全文件读写（含 safe_append 替代 Add-Content）" -ForegroundColor Gray
+Write-Host "  • python scripts/detect_gbk_contamination.py — 检测修复 GBK 编码污染" -ForegroundColor Gray
 Write-Host "  • python scripts/batch_edit.py       — 一次性多编辑（解决 edit_file 阻塞）" -ForegroundColor Gray
 Write-Host "  • python scripts/fix_encoding.py     — 批量编码转换" -ForegroundColor Gray
 Write-Host "  • python scripts/verify_output.py    — 验证结果输出到文件（替代 print）" -ForegroundColor Gray

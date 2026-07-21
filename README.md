@@ -4,7 +4,7 @@
 
 **让 Agent 用最少的 token 做最准的事**
 
-[![Version](https://img.shields.io/badge/version-1.6.2-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.7.0-blue.svg)]()
 [![License](https://img.shields.io/badge/license-GPL--3.0-green.svg)](LICENSE)
 [![Author](https://img.shields.io/badge/author-phoenixlucky-orange.svg)]()
 </div>
@@ -107,7 +107,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 | **C. 📦 多文件任务** | 短计划 → 分批加载 → 按步推进 | 🟡 中 |
 | **D. 📚 大资料总结** | 要点 + 证据位置，不逐段复述 | 🟠 中高 |
 | **E. 🏗️ 重大架构调整** | 诊断根因 → 确认方案 → 增量迁移 | 🔴 高（但可控） |
-| **F. 🪟 Windows/PowerShell 环境适配** | 7 条陷阱规则 + 脚本工具，解决中文+Windows 工作流痛点 | 🟢 低 |
+| **F. 🪟 Windows/PowerShell 环境适配** | 8 条陷阱规则 + 脚本工具，解决中文+Windows 工作流痛点 | 🟢 低 |
 
 ---
 
@@ -260,8 +260,8 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 - 🧭 **核心原则** — 先分类再预算、压缩提示词、渐进读取、先给结果、不复述
 - 📝 **精准提示词模板** — 目标 → 输入 → 约束 → 输出
 - 🔄 **六种任务模式详解 (A-F)** — 每种模式的完整行为规范
-- 🪟 **F. Windows/PowerShell 环境适配** — 7 条已知陷阱与解决方案
-- 🛠️ **scripts/ 工具集** — `safe_io.py`, `batch_edit.py`, `fix_encoding.py`, `verify_output.py`, `init_env.ps1`
+- 🪟 **F. Windows/PowerShell 环境适配** — 8 条已知陷阱与解决方案
+- 🛠️ **scripts/ 工具集** — `safe_io.py`, `detect_gbk_contamination.py`, `batch_edit.py`, `fix_encoding.py`, `verify_output.py`, `init_env.ps1`
 - ⚡ **ZeroToken 强化模式 & 退出条件**
 - 🛡️ **质量底线** — 压缩不降质的硬性要求
 
@@ -283,6 +283,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 | 3 | **渐进读取** | 按需读取，不看完整文件 |
 | 4 | **先给结果** | 结论先行，细节随后 |
 | 5 | **不复述** | 不重复用户已说的内容 |
+| 6 | **plan 只写顶层步骤** | 避免 bullet 子步骤被 todo 系统注册为独立待办项 |
 
 ---
 

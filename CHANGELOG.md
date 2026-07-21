@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.0] - 2026-07-21
 
+### Security
+- **Tp4 (MCP Tool Poisoning)** — 重写 SKILL.md `description` frontmatter，从纯"token-efficient discipline"扩展为同时声明文件系统工具能力的透明描述。
+- **Language Policy Opt-in** — 添加 `language_opt_in: true` metadata；H1 下方新增语言选择提示，明确中文引导为 opt-in；`agents/openai.yaml` 的 `default_prompt` 添加 opt-in 前缀。
+- 新增 `language_opt_in` metadata 字段至 SKILL.md frontmatter，供主机/审计工具检测。
+
 ### Added
+- `agents/openai.yaml` 的 `short_description` 改为英文描述 + opt-in 说明。
 - `scripts/safe_io.py`: 新增 `safe_append(path, content)` 函数 — 使用 Python `open(path, 'a', encoding='utf-8')` 替代 PowerShell `Add-Content`，防止 GBK 编码污染 UTF-8 文件
 - `scripts/detect_gbk_contamination.py`: 新增检测和修复 UTF-8 文件中 GBK 编码污染的独立脚本（三种模式：`scan` 扫描目录检测污染文件、`inspect` 详细查看污染位置和字节上下文、`fix` 智能修复污染并支持 `--backup` 备份和 `--preview` 预览）
 - SKILL.md F 模式：新增陷阱 #8（PowerShell Add-Content GBK 编码污染），脚本工具表新增 `detect_gbk_contamination.py` 条目并更新 `safe_io.py` 条目，安全文件读写模板增加安全追加示例，"不做什么"清单增加 Add-Content 禁令

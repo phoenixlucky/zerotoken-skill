@@ -1,6 +1,6 @@
 ---
 name: zerotoken-skill
-description: Default token-efficient assistant discipline — minimal prompts, concise context, short actionable outputs.
+description: Token-efficient assistant discipline with optional file-system utilities (file editing, encoding conversion, git helpers) — transparently declared in security disclosure below.
 metadata:
   version: 1.7.0
   security:
@@ -12,11 +12,18 @@ metadata:
       - gbk-contamination-detection: "detect and repair GBK-contaminated UTF-8 files"
       - git-operations: "git config and commit operations"
     permissions-declared: true
-    language: "zh-CN (documentation primary); adapts to user language"
+    language: "zh-CN (documentation primary); requires user opt-in for Chinese-mode prompts"
+    language_opt_in: true
     platforms: "cross-platform; F mode is Windows/PowerShell specific and conditional"
 ---
 
 # ZeroToken Skill
+
+> **语言选择 / Language Selection**
+> 本文档以中文编写，包含中文环境特定引导内容。
+> 仅当你在 Windows/PowerShell + 中文环境下工作，且你确认需要中文引导时，才启用 F 模式。
+> 其他情况默认使用英文工作流。
+> *(This skill adapts to your interaction language. Chinese guidance is opt-in only.)*
 
 用最少必要 token 和最精准提示词完成任务。省 token ≠ 偷工减料；核心是减少无效上下文、无效解释、无效工具调用、无效输出。
 
@@ -34,7 +41,8 @@ metadata:
 > **环境脚本范围：** `scripts/init_env.ps1` 仅配置当前仓库的 Git 设置（local），
 > 不修改全局 Git 配置。
 >
-> **语言说明：** 本文档以中文为主要编写语言，但 Skill 本身会自适应匹配用户的交互语言。
+> **语言说明：** 本文档以中文为主要编写语言。中文引导内容需要用户显式确认后生效——
+> 默认工作语言为英文，除非你明确使用中文交互或启用了 F 模式。
 > **平台说明：** 本 Skill 跨平台可用。F 模式（Windows/PowerShell 适配）仅限于
 > Windows/PowerShell + 中文文本环境，为可选模式而非默认行为。
 >

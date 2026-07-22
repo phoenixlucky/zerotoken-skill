@@ -74,6 +74,26 @@ metadata:
 5. **不复述** — 不重复用户问题、不写礼貌铺垫、不解释常识。
 6. **plan 只写顶层步骤，不写子弹** — plan 模式下每层 bullet 列表项都会被 todo 系统注册为独立待办项，必须严格线性顺序签收。<br>✅ 每个 phase 写 1 行顶层步骤（共 2-5 个），细节写在说明文字中而非子 bullet。<br>✅ 示例（正确）：<br>    `1. safe_io.py 新增 safe_append 函数 — 使用 Python open('a', encoding='utf-8') 替代 Add-Content`<br>❌ 示例（错误，会生成 10+ 待办项）：<br>    `1. safe_io.py 新增 safe_append<br>       - 实现函数<br>       - 更新文档字符串<br>       - 导出 __all__`<br>若已陷入子步骤阻塞，用 `complete_step({ step_index: N })` 跳过中间项直接签收当前卡住的项。
 
+---
+
+## 🔍 搜索资料规范
+
+**当任务需要搜索外部资料时，按以下优先级执行：**
+
+| 优先级 | 方式 | 条件 | 命令 |
+|--------|------|------|------|
+| 🥇 Chrome MCP | 通过真实浏览器+百度搜索 | `.reasonix/skills/mcp-streamable-connect/mcp_call.py` 存在且 MCP 服务在线 | `python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 关键词` |
+| 🥈 web_fetch | 备选，仅 Chrome MCP 不可用时 | 无条件 | `web_fetch` 工具 |
+
+> **为什么？** web_fetch 依赖 Bing 搜索结果不稳定（曾返回完全无关内容），Chrome MCP 通过真实浏览器搜索，结果精准可控。
+
+**Windows 平台注意**：调用 Chrome MCP 时，**必须使用 `mcp_call.py`（Python 包装）**，不要直接在 PowerShell 中调 `node mcp-bridge.js`，以避免 PowerShell 引号嵌套和 GBK 编码崩溃问题。`mcp_call.py` 已内置规避方案。
+
+```bash
+# ✅ 正确的搜索方式
+python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 搜索关键词
+```
+
 ## 精准提示词模板
 
 ```text
@@ -160,10 +180,11 @@ metadata:
 | 2 | **文件编码不一致** | 部分文件（如旧中文 Markdown）实际是 UTF-16 编码；Python 默认 UTF-8 读取抛 `UnicodeDecodeError`；旧文件中已有因编码损坏产生的替换字符 `�`，导致字符串精确匹配失败 | ✅ 统一采用 UTF-8 编码读写<br>✅ 安全读取方案见下文的「安全文件读写模板」 |
 | 3 | **edit_file 同文件连续编辑阻塞** | 同一文件的多处修改，第一次 `edit_file` 后第二次被拒，错误：`fresh read required — was already modified earlier this turn` | ✅ 对同一文件的多处修改，一次性用 Python 脚本完成<br>✅ 或用 `multi_edit` 一次传入多个替换（≤5 个以内）<br>✅ 维护一个更新脚本，执行后统一验证 |
 | 4 | **Git 中文文件名转义显示** | `git diff --stat` 显示 `\xxx\xxx` 编码序列，无法直接阅读中文文件名 | ✅ 先执行 `git config core.quotepath false` |
-| 5 | **AutoResearch verification 死循环** | 验证证据已提供多次（git diff、文件检查、关键词检查），但系统始终不接受；`stale_count` 持续累积 | ✅ 使用 `complete_step` 工具签收验证步骤（`kind: "verification"`），而非仅靠 `<autoresearch-evidence>` 块。<br>✅ `complete_step` 的 verification 证据类型会被 host 正确接受并推进任务列表 |
-| 6 | **Python 控制台输出中文失败** | Python 的 `print()` 在 PowerShell 控制台下因 GBK 编码报错：`UnicodeEncodeError: 'gbk' codec can't encode character` | ✅ 不直接 `print()`，写入 `.txt` 文件后用 `read_file` 查看<br>✅ 使用 `with open(out_path, 'w', encoding='utf-8') as f: f.write(result)` |
-| 7 | **PowerShell 中 `\r\n` 转义** | PowerShell 脚本中 `` `r`n `` 的反引号被解释为换行转义符，导致语法错误 | ✅ 不在 PowerShell 中拼接含换行的多语言文本<br>✅ 改用 Python 的 `\n` 处理换行 |
-| 8 | **PowerShell Add-Content 使用 GBK 编码污染 UTF-8 文件** | 用 `Add-Content` 向 UTF-8 文件追加中文后，新内容变为乱码（`ʮ�ġ�����ê�㷨`），文件末尾出现 `0x81` 等无效 UTF-8 字节<br>根因：PowerShell 的 `Add-Content` 默认使用系统区域编码（Windows 中文版为 GBK）写入 | ❌ **禁止直接使用 PowerShell Add-Content 追加含中文的内容**<br>✅ 使用 Python 安全追加：`open('file.md', 'a', encoding='utf-8').write('内容')`<br>✅ 或用 `safe_io.py` 的 `safe_append()` 函数<br>✅ 已污染的⽂件用 `detect_gbk_contamination.py` 检测修复 |
+| 5 | **PowerShell → Node.js 中文 JSON 参数断裂** | 调用 `node mcp-bridge.js call tools/call '{"name":"x","arguments":{"url":"中文"}}'` 时，中文导致 JSON 解析失败 | ✅ **不要直接调 `node mcp-bridge.js`**<br>✅ 改用 `python .reasonix\skills\mcp-streamable-connect\mcp_call.py` — Python 包装已内置 `json.dumps()` 正确序列化 |
+| 6 | **AutoResearch verification 死循环** | 验证证据已提供多次（git diff、文件检查、关键词检查），但系统始终不接受；`stale_count` 持续累积 | ✅ 使用 `complete_step` 工具签收验证步骤（`kind: "verification"`），而非仅靠 `<autoresearch-evidence>` 块。<br>✅ `complete_step` 的 verification 证据类型会被 host 正确接受并推进任务列表 |
+| 7 | **Python 控制台输出中文失败** | Python 的 `print()` 在 PowerShell 控制台下因 GBK 编码报错：`UnicodeEncodeError: 'gbk' codec can't encode character` | ✅ 不直接 `print()`，写入 `.txt` 文件后用 `read_file` 查看<br>✅ 使用 `with open(out_path, 'w', encoding='utf-8') as f: f.write(result)` |
+| 8 | **PowerShell 中 `\r\n` 转义** | PowerShell 脚本中 `` `r`n `` 的反引号被解释为换行转义符，导致语法错误 | ✅ 不在 PowerShell 中拼接含换行的多语言文本<br>✅ 改用 Python 的 `\n` 处理换行 |
+| 9 | **PowerShell Add-Content 使用 GBK 编码污染 UTF-8 文件** | 用 `Add-Content` 向 UTF-8 文件追加中文后，新内容变为乱码（`ʮ�ġ�����ê�㷨`），文件末尾出现 `0x81` 等无效 UTF-8 字节<br>根因：PowerShell 的 `Add-Content` 默认使用系统区域编码（Windows 中文版为 GBK）写入 | ❌ **禁止直接使用 PowerShell Add-Content 追加含中文的内容**<br>✅ 使用 Python 安全追加：`open('file.md', 'a', encoding='utf-8').write('内容')`<br>✅ 或用 `safe_io.py` 的 `safe_append()` 函数<br>✅ 已污染的⽂件用 `detect_gbk_contamination.py` 检测修复 |
 
 #### 脚本工具（scripts/ 目录）
 
@@ -221,6 +242,7 @@ with open(path, 'a', encoding='utf-8') as f:
 ❌ 不直接在 PowerShell 中用 `print()` 输出中文
 ❌ 不忽略 `git config core.quotepath` 设置
 ❌ **不使用 PowerShell 的 `Add-Content` 追加含中文的内容** — 改用 Python `open(path, 'a', encoding='utf-8')` 或 `safe_io.safe_append()`
+❌ **不直接在 PowerShell 中调用 `node mcp-bridge.js` 传递中文 JSON 参数** — 改用 `python .reasonix\skills\mcp-streamable-connect\mcp_call.py`
 
 ---
 

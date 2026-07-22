@@ -87,12 +87,45 @@ metadata:
 
 > **为什么？** web_fetch 依赖 Bing 搜索结果不稳定（曾返回完全无关内容），Chrome MCP 通过真实浏览器搜索，结果精准可控。
 
-**Windows 平台注意**：调用 Chrome MCP 时，**必须使用 `mcp_call.py`（Python 包装）**，不要直接在 PowerShell 中调 `node mcp-bridge.js`，以避免 PowerShell 引号嵌套和 GBK 编码崩溃问题。`mcp_call.py` 已内置规避方案。
+### Chrome MCP 能搜什么
+
+Chrome MCP 底层是真实浏览器（Playwright/Chrome），能访问 **百度搜索引擎能搜到的任何内容**，包括但不限于：
+
+| 场景 | 示例 | 命令 |
+|------|------|------|
+| 🔍 通用搜索 | 搜索新闻、人物、事件 | `python mcp_call.py search 关键词` |
+| 🐦 社交媒体动态 | 搜微博、知乎、小红书上的内容 | `python mcp_call.py search 微博 关键词` |
+| 🏢 公司/产品信息 | 查询公司背景、产品评测 | `python mcp_call.py search 公司名 评价` |
+| 📰 最新资讯 | 今日热点、行业动态 | `python mcp_call.py search 今日 热点` |
+
+> **无需为每个平台找专用的 MCP server** — Chrome MCP + 百度搜索 通杀所有反爬严格的网站。
+
+### 什么情况走 web_fetch（备选）
+
+仅当以下条件**全部满足**时才回退到 web_fetch：
+1. `mcp_call.py` 不存在或 MCP 服务离线
+2. 目标网站没有反爬（非社交平台、非登录墙）
+3. 仅需获取静态页面内容（非 SPA 页面）
+
+### ❌ 禁用行为
+
+- **禁止用 web_fetch 直抓社交媒体（微博/知乎/小红书等）** — 全部有登录墙/反爬，100% 失败
+- **禁止自己写 Playwright/Puppeteer 脚本** — 已有现成的 `mcp_call.py`，一行搞定
+- **禁止用 web_fetch 直连搜索引擎（Google/百度/Bing）** — 纯 HTTP 请求会被机器人检测拦截
+
+### Windows 平台注意
+
+调用 Chrome MCP 时，**必须使用 `mcp_call.py`（Python 包装）**，不要直接在 PowerShell 中调 `node mcp-bridge.js`，以避免 PowerShell 引号嵌套和 GBK 编码崩溃问题。`mcp_call.py` 已内置规避方案。
 
 ```bash
-# ✅ 正确的搜索方式
+# ✅ 正确的搜索方式（任何搜索场景）
 python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 搜索关键词
-```
+
+# ✅ 搜微博内容
+python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 微博 明星 最新动态
+
+# ✅ 搜新闻
+python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
 
 ## 精准提示词模板
 
@@ -243,6 +276,8 @@ with open(path, 'a', encoding='utf-8') as f:
 ❌ 不忽略 `git config core.quotepath` 设置
 ❌ **不使用 PowerShell 的 `Add-Content` 追加含中文的内容** — 改用 Python `open(path, 'a', encoding='utf-8')` 或 `safe_io.safe_append()`
 ❌ **不直接在 PowerShell 中调用 `node mcp-bridge.js` 传递中文 JSON 参数** — 改用 `python .reasonix\skills\mcp-streamable-connect\mcp_call.py`
+❌ **不用 `web_fetch` 直抓社交媒体（微博/知乎/小红书等）** — 100% 被登录墙或反爬拦截
+❌ **不自己写 Playwright/Puppeteer 脚本** — 已有现成的 `python mcp_call.py search 关键词`
 
 ---
 

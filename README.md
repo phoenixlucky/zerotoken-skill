@@ -230,6 +230,34 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 
 ---
 
+### F. 🪟 Windows/PowerShell 环境适配 — "当前是 Windows/PowerShell + 中文环境"
+
+> **⚠️ 此模式为可选环境适配，非默认行为。** 仅当工作在 Windows PowerShell 环境且任务涉及中文时才启用。macOS / Linux 或纯英文工作流不需要此模式。
+
+**适用场景：** Windows PowerShell + 中文环境下的文件读写、Git 操作、脚本执行、编码处理。
+
+**典型信号：**
+```
+"这个中文文件打开是乱码"
+"git diff 显示 \\xxx 而不是中文文件名"
+"PowerShell 里中文报语法错误"
+"文件被 GBK 污染了，修复一下"
+```
+
+**行为表现：**
+```
+🏷️ 识别 → "Windows/PowerShell + 中文环境，启用 F 模式"
+   📋 检查 → 8 条已知陷阱匹配当前症状
+      🛠️ 解决 → 对应脚本工具或安全模板处理
+         📝 输出 → 修复结果 + 验证确认
+```
+
+**不做什么：** ❌ 不在 bash 命令中直接嵌入含 `+` 的中文 ❌ 不使用 `Add-Content` 追加中文 ❌ 不直接在 PowerShell 中 `print()` 中文 ❌ 不忽略编码问题强行操作
+
+**内置工具包（`scripts/`）：** `safe_io.py`（安全读写）、`detect_gbk_contamination.py`（检测修复 GBK 污染）、`batch_edit.py`（批量编辑）、`fix_encoding.py`（编码转换）、`verify_output.py`（验证输出）、`init_env.ps1`（环境初始化）
+
+---
+
 ## ✨ ZeroToken 强化模式
 
 当用户明确要求"省 token"时，叠加以下规则：

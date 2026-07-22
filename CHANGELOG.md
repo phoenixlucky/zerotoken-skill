@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.1] - 2026-07-?? (unreleased)
+
+### Added
+- 增强搜索规范：新增「Chrome MCP 能搜什么」场景表，消除 AI 不知道 Chrome MCP 能搜微博/新闻等的问题
+- 新增「禁用行为」三项硬约束：禁 web_fetch 直抓社交平台、禁自写 playwright 脚本、禁 web_fetch 直连搜索引擎
+
 ## [1.8.0] - 2026-07-?? (unreleased)
 
 ### Added

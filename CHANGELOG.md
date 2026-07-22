@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.7.3] - 2026-07-?? (unreleased)
+## [1.8.0] - 2026-07-?? (unreleased)
 
 ### Added
 - 适配 browser-localmcp-skills：新增 mcp_call.py Python 包装脚本，彻底规避 Windows PowerShell 引号嵌套和 GBK 编码崩溃问题

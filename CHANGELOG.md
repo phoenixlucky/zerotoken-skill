@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.3] - 2026-07-?? (unreleased)
+
+### Added
+- 适配 browser-localmcp-skills：新增 mcp_call.py Python 包装脚本，彻底规避 Windows PowerShell 引号嵌套和 GBK 编码崩溃问题
+- SKILL.md 新增「搜索资料指南」章节，明确 Chrome MCP 优先搜索策略
+- SKILL.md 全量示例迁移至 mcp_call.py，消除 Windows 平台调用屏障
+
+### Fixed
+- 规避「Bing 搜索返回无关结果」问题，强制优先走 Chrome MCP（百度搜索）
+
 ## [1.7.2] - 2026-07-22
 
 ### Fixed

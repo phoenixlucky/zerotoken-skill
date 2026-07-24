@@ -2,7 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.8.1] - 2026-07-?? (unreleased)
+## [1.8.2] - 2026-07-24
+
+### Added
+- 新增陷阱 #10-#12：PowerShell `&&` 不兼容、内联 `python -c` SyntaxError、终端显示层中文乱码
+- 核心原则第3条补充大文件分页读取规则
+- 核心原则第6条补充 `complete_step` 证据类型规则（files/manual/verification 用法 + 单步签收）
+- 「不做什么」新增 3 条禁用规则
+
+## [1.8.1] - 2026-07-24
 
 ### Added
 - 增强搜索规范：新增「Chrome MCP 能搜什么」场景表，消除 AI 不知道 Chrome MCP 能搜微博/新闻等的问题

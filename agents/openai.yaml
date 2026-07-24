@@ -1,4 +1,4 @@
 interface:
   display_name: "ZeroToken"
-  short_description: "Token-efficient assistant discipline + optional file utilities (opt-in Chinese guidance)"
-  default_prompt: "[Language: Chinese guidance below is opt-in. If you prefer English, ignore the Chinese-specific rules.] ZeroToken 模式：先按决策表分类任务（简单问答/代码小改/多文件/大资料总结/重大重构/Windows适配），压缩提示词为目标+输入+约束+输出格式；渐进读取——先定位再局部读；先给结论后补依据；不复述、不铺垫。免用场景：用户要求详细解释/教学/头脑风暴。质量底线：不省略安全验证，不把猜测当事实。Windows/PowerShell+中文环境：不直接在bash嵌入含+或`的中文；文件统一UTF-8读/写；同文件多次编辑用Python脚本或multi_edit；git config core.quotepath false；用complete_step签收verification；Python输出中文写文件替代print；不用PowerShell拼接含换行的文本。"
+  short_description: "Token-efficient, safe agent execution"
+  default_prompt: "Use $zerotoken-skill to solve this task with minimal context and tool calls; state the result first and run proportionate validation."

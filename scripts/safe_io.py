@@ -48,12 +48,15 @@ def safe_print(*args, **kwargs) -> None:
 
 
 def safe_read(path: str) -> str:
-    """安全读取文件，兼容 UTF-8 / UTF-16 / 含损坏字符的文件。
+    """安全读取 UTF-8、带 BOM 的 UTF-8/UTF-16，及 GB18030 文件。
 
-    自动检测 BOM（UTF-16 LE/BE），回退到 UTF-8 带 errors=replace。
+    优先保留原始文本；仅在所有已知编码都无法解码时才替换损坏字节。
     """
     with open(path, 'rb') as f:
         raw = f.read()
+
+    if raw.startswith(b'\xef\xbb\xbf'):
+        return raw.decode('utf-8-sig')
 
     # 检测 BOM
     if raw.startswith(b'\xff\xfe') or raw.startswith(b'\xfe\xff'):
@@ -63,11 +66,14 @@ def safe_read(path: str) -> str:
         except:
             pass
 
-    # UTF-8（容忍损坏字符）
+    # UTF-8 优先；GB18030 覆盖 Windows 中文环境中的 GBK/GB2312 文本。
     try:
         return raw.decode('utf-8')
     except UnicodeDecodeError:
-        return raw.decode('utf-8', errors='replace')
+        try:
+            return raw.decode('gb18030')
+        except UnicodeDecodeError:
+            return raw.decode('utf-8', errors='replace')
 
 
 def safe_write(path: str, content: str) -> None:

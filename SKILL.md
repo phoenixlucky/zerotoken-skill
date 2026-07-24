@@ -1,7 +1,6 @@
 ---
 name: zerotoken-skill
-description: Token-efficient assistant discipline with optional file-system utilities (file editing, encoding conversion, git helpers) — transparently declared in security disclosure below.
-version: 1.8.1
+description: Token-efficient assistant discipline for concise answers and task execution. Use when the user asks for direct, low-token work, or invokes this skill; includes optional file and Windows encoding utilities declared below.
 metadata:
   security:
     capabilities:
@@ -61,18 +60,25 @@ metadata:
 | 反复出同类 bug / 加功能越来越难 / 架构与需求不匹配 / 需要大改 | **E. 重大重构/架构调整** | 问题诊断 + 目标方案 + 迁移路线图 | ``codegraph_context`` → ``explore`` → ``codegraph_trace`` → 分批 ``read_file`` |
 | 用户明确说"省 token" | **ZeroToken 强化** | 最短可执行输出 | 同上，但跳过所有非必要探索 |
 | 用户说"详细解释/教学" | **➡ 退出 ZeroToken** | 常规详尽模式 | 不限 |
-| 当前在 Windows/PowerShell 下工作，有中文文本 | **F. Windows/PowerShell 环境适配** | 按 8 条陷阱规则调整工作流 | `write_file`(写 .py 脚本) → `python`(执行) → `git config core.quotepath false` → `complete_step`(签收) |
+| 当前在 Windows/PowerShell 下工作，有中文文本 | **F. Windows/PowerShell 环境适配** | 按 12 条陷阱规则调整工作流 | `write_file`(写 .py 脚本) → `python`(执行) → `git config core.quotepath false` → `complete_step`(签收) |
 
 ---
 
 ## 核心原则
 
 1. **先分类，再预算** — 按上表决定上下文深度，不默认全量读取。
-2. **压缩提示词** — 目标 + 输入 + 约束 + 输出格式，缺一才问。
-3. **渐进读取** — 先定位（`search_content`/`glob`），再局部读，读完即停。
+2. **压缩提示词** — 目标 + 已知输入 + 约束 + 验收格式；只在缺失项会改变结果时追问。
+3. **渐进读取** — 先定位（`search_content`/`glob`），再局部读，读完即停。大文件（70KB+）用 `read_file` 的 `offset` + `limit` 分页读取，或通过 `grep` 精确定位关键段落后读小范围，避免被截断。
 4. **先给结果** — 结论或完成状态先行；解释、推理按需补充。
 5. **不复述** — 不重复用户问题、不写礼貌铺垫、不解释常识。
 6. **plan 只写顶层步骤，不写子弹** — plan 模式下每层 bullet 列表项都会被 todo 系统注册为独立待办项，必须严格线性顺序签收。<br>✅ 每个 phase 写 1 行顶层步骤（共 2-5 个），细节写在说明文字中而非子 bullet。<br>✅ 示例（正确）：<br>    `1. safe_io.py 新增 safe_append 函数 — 使用 Python open('a', encoding='utf-8') 替代 Add-Content`<br>❌ 示例（错误，会生成 10+ 待办项）：<br>    `1. safe_io.py 新增 safe_append<br>       - 实现函数<br>       - 更新文档字符串<br>       - 导出 __all__`<br>若已陷入子步骤阻塞，用 `complete_step({ step_index: N })` 跳过中间项直接签收当前卡住的项。
+
+**`complete_step` 证据类型规则：**
+✅ 工具写入的文件（`write_file`/`edit_file`）→ `files` 证据
+✅ Python 脚本写入的文件 → `manual` 证据
+✅ `verification` 证据的 `command` 必须与会话历史中的命令文本完全一致
+✅ 每次工具调用只签一个 `complete_step`，按步骤顺序逐一推进（`blocked: only one successful complete_step is allowed per tool-call round`）
+7. **设置停止条件** — 已定位目标、必要调用方/数据源和验证方式后停止搜索；同一文件未变化时不重复读取。
 
 ---
 
@@ -134,6 +140,7 @@ python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
 输入：<数据/代码/错误/位置>
 约束：<不能做什么/必须满足什么>
 输出：<格式/字段/长度/验收标准>
+预算：<直接回答 / 最小读取 / 需要验证>（可省略，默认最小读取）
 ```
 
 用户请求含糊时，先用此模板提炼再执行。只有缺少关键输入会导致结果不可用时才追问，且一次只问 1 个问题。
@@ -218,6 +225,9 @@ python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
 | 7 | **Python 控制台输出中文失败** | Python 的 `print()` 在 PowerShell 控制台下因 GBK 编码报错：`UnicodeEncodeError: 'gbk' codec can't encode character` | ✅ 不直接 `print()`，写入 `.txt` 文件后用 `read_file` 查看<br>✅ 使用 `with open(out_path, 'w', encoding='utf-8') as f: f.write(result)` |
 | 8 | **PowerShell 中 `\r\n` 转义** | PowerShell 脚本中 `` `r`n `` 的反引号被解释为换行转义符，导致语法错误 | ✅ 不在 PowerShell 中拼接含换行的多语言文本<br>✅ 改用 Python 的 `\n` 处理换行 |
 | 9 | **PowerShell Add-Content 使用 GBK 编码污染 UTF-8 文件** | 用 `Add-Content` 向 UTF-8 文件追加中文后，新内容变为乱码（`ʮ�ġ�����ê�㷨`），文件末尾出现 `0x81` 等无效 UTF-8 字节<br>根因：PowerShell 的 `Add-Content` 默认使用系统区域编码（Windows 中文版为 GBK）写入 | ❌ **禁止直接使用 PowerShell Add-Content 追加含中文的内容**<br>✅ 使用 Python 安全追加：`open('file.md', 'a', encoding='utf-8').write('内容')`<br>✅ 或用 `safe_io.py` 的 `safe_append()` 函数<br>✅ 已污染的⽂件用 `detect_gbk_contamination.py` 检测修复 |
+| 10 | **PowerShell `&&` 链式操作不兼容** | PowerShell 不支持 bash 风格的 `&&` 运算符，`cmd1 && cmd2` 报语法错误 | ✅ 用 `;` 无条件链式<br>✅ 用 `if ($?) { ... }` 做条件链式 |
+| 11 | **内联 `python -c` 中文 SyntaxError** | `python -c "含中文的代码"` 在 PowerShell 下因编码问题导致 SyntaxError | ❌ 不要用 `python -c` 传入含中文的代码<br>✅ 改为 `write_file` 写 `.py` 脚本执行 |
+| 12 | **终端显示层中文乱码（文件内容正确）** | PowerShell 终端显示中文为乱码/问号，但文件内容实际正确（GBK 终端显示 UTF-8 编码文件） | ✅ 用文件大小/行数验证<br>✅ 用 `chcp 65001` 切换终端到 UTF-8 |
 
 #### 脚本工具（scripts/ 目录）
 
@@ -225,7 +235,7 @@ python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
 
 | 脚本 | 解决问题 | 用法示例 |
 |------|----------|----------|
-| `safe_io.py` | #2 编码不一致 / #6 无法 print 中文 / #8 安全追加替代 Add-Content | `from safe_io import safe_read, safe_write, safe_append, write_result` |
+| `safe_io.py` | #2 编码不一致（UTF-8 BOM / UTF-16 BOM / GB18030） / #6 无法 print 中文 / #8 安全追加替代 Add-Content | `from safe_io import safe_read, safe_write, safe_append, write_result` |
 | `detect_gbk_contamination.py` | #8 检测修复 GBK 编码污染 | `python scripts/detect_gbk_contamination.py scan .` / `python scripts/detect_gbk_contamination.py fix . --backup` |
 | `batch_edit.py` | #3 edit_file 连续编辑阻塞 | `python scripts/batch_edit.py file.json replacements.json` |
 | `fix_encoding.py` | #2 批量编码转换 | `python scripts/fix_encoding.py scan .` / `python scripts/fix_encoding.py convert . --backup` |
@@ -243,7 +253,7 @@ python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
 3. git diff --stat 验证文件变更
 4. 用 verify_output.py 输出验证结果到 .txt 文件
 5. read_file 读取验证结果
-6. complete_step 签收 verification
+6. complete_step 签收 verification（注意：每次工具调用只签一个 step，按顺序逐一推进）
 ```
 
 #### 安全文件读写模板
@@ -277,7 +287,10 @@ with open(path, 'a', encoding='utf-8') as f:
 ❌ **不使用 PowerShell 的 `Add-Content` 追加含中文的内容** — 改用 Python `open(path, 'a', encoding='utf-8')` 或 `safe_io.safe_append()`
 ❌ **不直接在 PowerShell 中调用 `node mcp-bridge.js` 传递中文 JSON 参数** — 改用 `python .reasonix\skills\mcp-streamable-connect\mcp_call.py`
 ❌ **不用 `web_fetch` 直抓社交媒体（微博/知乎/小红书等）** — 100% 被登录墙或反爬拦截
-❌ **不自己写 Playwright/Puppeteer 脚本** — 已有现成的 `python mcp_call.py search 关键词`
+❌ **不自己写 Playwright/Puppeteer 脚本**
+❌ **不使用 `python -c` 内联含中文的代码** — 改用 `write_file` + `python "script.py"` 两步法
+❌ **不使用 `&&` 链式命令** — PowerShell 不支持，改用 `;` 或 `if ($?) { ... }`
+❌ **不依赖终端输出验证中文内容** — 用文件内容验证替代 — 已有现成的 `python mcp_call.py search 关键词`
 
 ---
 
@@ -287,6 +300,7 @@ with open(path, 'a', encoding='utf-8') as f:
 
 - 跳过所有非必要探索（不 glob 全目录、不预览多个候选）
 - 工具调用次数压到最低（能 1 步不用 2 步）
+- 每次读取或工具调用前写明要验证的假设；得到答案即停止，不为“保险”重复调用
 - 输出只保留：做了什么 + 结果 + 用户下一步需要的操作（如果有）
 
 ## 输出格式

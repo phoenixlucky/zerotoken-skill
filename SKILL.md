@@ -290,7 +290,7 @@ with open(path, 'a', encoding='utf-8') as f:
 ❌ **不自己写 Playwright/Puppeteer 脚本**
 ❌ **不使用 `python -c` 内联含中文的代码** — 改用 `write_file` + `python "script.py"` 两步法
 ❌ **不使用 `&&` 链式命令** — PowerShell 不支持，改用 `;` 或 `if ($?) { ... }`
-❌ **不依赖终端输出验证中文内容** — 用文件内容验证替代 — 已有现成的 `python mcp_call.py search 关键词`
+❌ **不依赖终端输出验证中文内容** — 用文件内容验证替代
 
 ---
 

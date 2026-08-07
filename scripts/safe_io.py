@@ -22,13 +22,32 @@ from typing import Optional
 
 # ── 编码安全的控制台输出 ──────────────────────────────────
 # 解决 #6: Python 在 GBK 控制台下 print(中文/特殊符号) 报 UnicodedEncodeError
+# 规范 2/15：不依赖系统默认字符集，优先显式把 stdio 切到 UTF-8，
+# 而不是把中文替换成 '?'（显示层丢字）。
+def _ensure_utf8_stdio() -> None:
+    """将 stdout/stderr 显式切换为 UTF-8（Python 3.7+）。
+
+    Windows 中文系统默认控制台代码页为 GBK(936)，不切换时
+    print(中文) 会抛 UnicodeEncodeError 或被替换成 '?'。
+    切换到 UTF-8 后，配合 `chcp 65001`（或管道重定向）中文可完整显示。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding='utf-8')
+        except (AttributeError, OSError, ValueError):
+            # Python < 3.7 无 reconfigure，或流不支持重配置时保持原样
+            pass
+
+
+_ensure_utf8_stdio()
 _STDOUT_ENCODING = getattr(sys.stdout, 'encoding', 'utf-8') or 'utf-8'
 
 
 def safe_print(*args, **kwargs) -> None:
     """安全打印，自动处理控制台编码不支持 Unicode 的问题。
 
-    在 GBK 控制台下，会将无法编码的字符替换为 '?' 而不是崩溃。
+    模块导入时已尝试把 stdout 切换到 UTF-8；在极少数仍无法
+    编码的环境中，将无法编码的字符替换为 '?' 而不是崩溃。
     永远不会有 UnicodeEncodeError。
     """
     try:
@@ -77,9 +96,9 @@ def safe_read(path: str) -> str:
 
 
 def safe_write(path: str, content: str) -> None:
-    """安全写入文件，统一 UTF-8 编码（不含 BOM）。"""
+    """安全写入文件，统一 UTF-8 编码（不含 BOM），行尾统一 LF。"""
     os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
-    with open(path, 'w', encoding='utf-8') as f:
+    with open(path, 'w', encoding='utf-8', newline='\n') as f:
         f.write(content)
 
 
@@ -89,7 +108,7 @@ def safe_append(path: str, content: str) -> str:
     专为替代 PowerShell Add-Content 设计。Add-Content 在 Windows 中文版下
     默认使用 GBK 编码写入，会与文件原有的 UTF-8 编码混合导致乱码。
 
-    始终使用 Python open(path, 'a', encoding='utf-8')，确保编码一致。
+    始终使用 Python open(path, 'a', encoding='utf-8', newline='\n')，确保编码一致。
 
     Args:
         path: 文件路径（父目录不存在时自动创建）
@@ -104,7 +123,7 @@ def safe_append(path: str, content: str) -> str:
         # 但使用 UTF-8 而非 GBK
     """
     os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
-    with open(path, 'a', encoding='utf-8') as f:
+    with open(path, 'a', encoding='utf-8', newline='\n') as f:
         f.write(content)
         if not content.endswith('\n'):
             f.write('\n')
@@ -121,7 +140,7 @@ def write_result(result: str, out_path: str = "verify_result.txt",
     返回写入的绝对路径，供 read_file 工具读取。
     """
     mode = 'a' if append else 'w'
-    with open(out_path, mode, encoding='utf-8') as f:
+    with open(out_path, mode, encoding='utf-8', newline='\n') as f:
         f.write(result)
         if not result.endswith('\n'):
             f.write('\n')

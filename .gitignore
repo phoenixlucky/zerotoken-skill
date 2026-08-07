@@ -3,5 +3,6 @@
 .reasonix/
 check.txt
 test_*.txt
+audit_result.txt
 __pycache__/
 *.pyc

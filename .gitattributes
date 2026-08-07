@@ -13,6 +13,10 @@
 *.json text eol=lf
 *.toml text eol=lf
 
+# Git dotfiles: LF line endings
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
 # Shell scripts: LF line endings (required for /bin/sh)
 *.sh text eol=lf
 

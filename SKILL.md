@@ -1,6 +1,6 @@
 ---
 name: zerotoken-skill
-version: 1.9.0
+version: 1.9.1
 description: Token-efficient assistant discipline for concise answers and task execution. Use when the user asks for direct, low-token work, or invokes this skill; includes optional file and Windows encoding utilities declared below.
 metadata:
   security:
@@ -249,14 +249,14 @@ python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
 | # | 陷阱 | 症状 | 解决方案 |
 |---|------|------|----------|
 | 1 | **PowerShell 与中文文本冲突** | `bash` 工具传中文给 PowerShell，`+` 被解析为字符串拼接运算符；反引号 `` ` `` 被识别为转义字符；含中文的 PowerShell 字符串报 `Missing ')'` 语法错误 | ❌ 不要直接在 `bash` 命令中嵌入含 `+` 的中文<br>✅ 改为 `write_file` 写 `.py` 脚本文件，再用 `python "script.py"` 执行 |
-| 2 | **文件编码不一致** | 部分文件（如旧中文 Markdown）实际是 UTF-16 编码；Python 默认 UTF-8 读取抛 `UnicodeDecodeError`；旧文件中已有因编码损坏产生的替换字符 `�`，导致字符串精确匹配失败 | ✅ 统一采用 UTF-8 编码读写<br>✅ 安全读取方案见下文的「安全文件读写模板」 |
+| 2 | **文件编码不一致** | 部分文件（如旧中文 Markdown）实际是 UTF-16 编码；Python 默认 UTF-8 读取抛 `UnicodeDecodeError`；旧文件中已有因编码损坏产生的替换字符（U+FFFD），导致字符串精确匹配失败 | ✅ 统一采用 UTF-8 编码读写<br>✅ 安全读取方案见下文的「安全文件读写模板」 |
 | 3 | **edit_file 同文件连续编辑阻塞** | 同一文件的多处修改，第一次 `edit_file` 后第二次被拒，错误：`fresh read required — was already modified earlier this turn` | ✅ 对同一文件的多处修改，一次性用 Python 脚本完成<br>✅ 或用 `multi_edit` 一次传入多个替换（≤5 个以内）<br>✅ 维护一个更新脚本，执行后统一验证 |
 | 4 | **Git 中文文件名转义显示** | `git diff --stat` 显示 `\xxx\xxx` 编码序列，无法直接阅读中文文件名 | ✅ 先执行 `git config core.quotepath false` |
 | 5 | **PowerShell → Node.js 中文 JSON 参数断裂** | 调用 `node mcp-bridge.js call tools/call '{"name":"x","arguments":{"url":"中文"}}'` 时，中文导致 JSON 解析失败 | ✅ **不要直接调 `node mcp-bridge.js`**<br>✅ 改用 `python .reasonix\skills\mcp-streamable-connect\mcp_call.py` — Python 包装已内置 `json.dumps()` 正确序列化 |
 | 6 | **AutoResearch verification 死循环** | 验证证据已提供多次（git diff、文件检查、关键词检查），但系统始终不接受；`stale_count` 持续累积 | ✅ 使用 `complete_step` 工具签收验证步骤（`kind: "verification"`），而非仅靠 `<autoresearch-evidence>` 块。<br>✅ `complete_step` 的 verification 证据类型会被 host 正确接受并推进任务列表 |
 | 7 | **Python 控制台输出中文失败** | Python 的 `print()` 在 PowerShell 控制台下因 GBK 编码报错：`UnicodeEncodeError: 'gbk' codec can't encode character` | ✅ 不直接 `print()`，写入 `.txt` 文件后用 `read_file` 查看<br>✅ 使用 `with open(out_path, 'w', encoding='utf-8') as f: f.write(result)` |
 | 8 | **PowerShell 中 `\r\n` 转义** | PowerShell 脚本中 `` `r`n `` 的反引号被解释为换行转义符，导致语法错误 | ✅ 不在 PowerShell 中拼接含换行的多语言文本<br>✅ 改用 Python 的 `\n` 处理换行 |
-| 9 | **PowerShell Add-Content 使用 GBK 编码污染 UTF-8 文件** | 用 `Add-Content` 向 UTF-8 文件追加中文后，新内容变为乱码（`ʮ�ġ�����ê�㷨`），文件末尾出现 `0x81` 等无效 UTF-8 字节<br>根因：PowerShell 的 `Add-Content` 默认使用系统区域编码（Windows 中文版为 GBK）写入 | ❌ **禁止直接使用 PowerShell Add-Content 追加含中文的内容**<br>✅ 使用 Python 安全追加：`open('file.md', 'a', encoding='utf-8').write('内容')`<br>✅ 或用 `safe_io.py` 的 `safe_append()` 函数<br>✅ 已污染的⽂件用 `detect_gbk_contamination.py` 检测修复 |
+| 9 | **PowerShell Add-Content 使用 GBK 编码污染 UTF-8 文件** | 用 `Add-Content` 向 UTF-8 文件追加中文后，新内容变为乱码（GBK 字节被误读为 UTF-8，出现 U+FFFD 替换字符），文件末尾出现 `0x81` 等无效 UTF-8 字节<br>根因：PowerShell 的 `Add-Content` 默认使用系统区域编码（Windows 中文版为 GBK）写入 | ❌ **禁止直接使用 PowerShell Add-Content 追加含中文的内容**<br>✅ 使用 Python 安全追加：`open('file.md', 'a', encoding='utf-8').write('内容')`<br>✅ 或用 `safe_io.py` 的 `safe_append()` 函数<br>✅ 已污染的⽂件用 `detect_gbk_contamination.py` 检测修复 |
 | 10 | **PowerShell `&&` 链式操作不兼容** | PowerShell 不支持 bash 风格的 `&&` 运算符，`cmd1 && cmd2` 报语法错误 | ✅ 用 `;` 无条件链式<br>✅ 用 `if ($?) { ... }` 做条件链式 |
 | 11 | **内联 `python -c` 中文 SyntaxError** | `python -c "含中文的代码"` 在 PowerShell 下因编码问题导致 SyntaxError | ❌ 不要用 `python -c` 传入含中文的代码<br>✅ 改为 `write_file` 写 `.py` 脚本执行 |
 | 12 | **终端显示层中文乱码（文件内容正确）** | PowerShell 终端显示中文为乱码/问号，但文件内容实际正确（GBK 终端显示 UTF-8 编码文件） | ✅ 用文件大小/行数验证<br>✅ 用 `chcp 65001` 切换终端到 UTF-8 |
@@ -291,7 +291,7 @@ python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
 #### 安全文件读写模板
 
 ```python
-# 安全读取（兼容 UTF-8 / UTF-16 / 含损坏字符的文件）
+# 安全读取（兼容 UTF-8 / UTF-16 / 含损坏字符的历史文件）— 或直接用 safe_io.safe_read()
 with open(path, 'rb') as f:
     raw = f.read()
 try:
@@ -299,12 +299,12 @@ try:
 except:
     content = raw.decode('utf-8', errors='replace')
 
-# 安全写入（统一 UTF-8）
-with open(path, 'w', encoding='utf-8') as f:
+# 安全写入（统一 UTF-8，行尾 LF；newline='\n' 防止 Windows 文本模式写成 CRLF）
+with open(path, 'w', encoding='utf-8', newline='\n') as f:
     f.write(content)
 
-# 安全追加（替代 Add-Content，避免 GBK 污染）
-with open(path, 'a', encoding='utf-8') as f:
+# 安全追加（替代 Add-Content，避免 GBK 污染；newline='\n' 同上）
+with open(path, 'a', encoding='utf-8', newline='\n') as f:
     f.write(content)
     if not content.endswith('\n'):
         f.write('\n')

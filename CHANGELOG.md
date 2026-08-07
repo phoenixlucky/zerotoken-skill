@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.1] - 2026-08-08
+
+### Changed
+- 版本号 1.9.0 → 1.9.1
+
+## [Unreleased]
+
+### Changed
+- 落地「Unicode 安全编码规范」（新增 `docs/unicode-encoding-spec.md`，15 条硬性规定 + 项目执行细则；AGENTS.md 增加编码规范约束）
+- 所有 Python 脚本：控制台输出优先 `sys.stdout.reconfigure(encoding='utf-8')`（Python 3.7+），不再把中文替换成 `?`；写模式 `open()` 显式 `newline='\n'`，避免 Windows 文本模式把 LF 写成 CRLF
+- `scripts/batch_edit.py` / `scripts/verify_output.py`：去除 `errors='replace'` 静默损坏，非 UTF-8/UTF-16/GB18030 文件显式抛错提示先检查原编码
+- `scripts/init_env.ps1` 转为 UTF-8 with BOM（Windows PowerShell 5.1 解析中文必需）；清理未使用变量
+- `.reasonix/skills/mcp-streamable-connect/mcp-bridge.js`：HTTP `Content-Type` 显式声明 `charset=utf-8`
+- SKILL.md「安全文件读写模板」更新（写/追加显式 `newline='\n'`），替换字符示例改为文字描述（U+FFFD）
+
+### Added
+- 新增 `scripts/audit_encoding.py` 全项目编码审计工具（UTF-8 / BOM / 替换字符 / 混合换行检测）
+
 ## [1.9.0] - 2026-08-07
 
 ### Added

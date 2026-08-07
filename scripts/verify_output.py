@@ -28,6 +28,14 @@ from typing import List, Tuple
 
 
 # ── 安全打印（解决 #6: GBK 控制台 UnicodeEncodeError）──
+# 规范 2/15：不依赖系统默认字符集，显式把 stdio 切到 UTF-8
+# （Python 3.7+；旧版本或不可重配置流保持原样）
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except (AttributeError, OSError, ValueError):
+    pass
+
 _STDOUT_ENCODING = getattr(sys.stdout, 'encoding', 'utf-8') or 'utf-8'
 
 
@@ -88,7 +96,7 @@ def write_verify_results(
     content = "\n".join(lines) + "\n"
 
     os.makedirs(os.path.dirname(out_path) or '.', exist_ok=True)
-    with open(out_path, 'w', encoding='utf-8') as f:
+    with open(out_path, 'w', encoding='utf-8', newline='\n') as f:
         f.write(content)
 
     abs_path = os.path.abspath(out_path)
@@ -113,13 +121,15 @@ def grep_check(
         label = pattern
 
     try:
-        # 安全读取
+        # 安全读取：显式 UTF-8，失败时抛错而非静默替换
         with open(file_path, 'rb') as f:
             raw = f.read()
-        try:
+        if raw.startswith(b'\xef\xbb\xbf'):
+            content = raw.decode('utf-8-sig')
+        elif raw.startswith(b'\xff\xfe') or raw.startswith(b'\xfe\xff'):
+            content = raw.decode('utf-16')
+        else:
             content = raw.decode('utf-8')
-        except:
-            content = raw.decode('utf-8', errors='replace')
 
         count = content.count(pattern)
         if count >= expected_min:

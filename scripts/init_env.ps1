@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Windows/PowerShell + 中文环境初始化脚本
 .DESCRIPTION
@@ -39,7 +39,6 @@ try {
 
 # 3. 检查替换字符
 Write-Host "[3/4] 编码健康状况" -ForegroundColor Cyan
-$repFile = ".encoding_check.txt"
 try {
     python scripts/fix_encoding.py check-replacement . --ext .md,.yaml,.json 2>$null
     Write-Step "替换字符检查" "OK"

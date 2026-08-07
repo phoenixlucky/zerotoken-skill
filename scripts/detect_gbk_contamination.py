@@ -45,6 +45,14 @@ from typing import List, Optional, Tuple
 
 
 # ── 安全打印（解决 #6: GBK 控制台 UnicodeEncodeError）──
+# 规范 2/15：不依赖系统默认字符集，显式把 stdio 切到 UTF-8
+# （Python 3.7+；旧版本或不可重配置流保持原样）
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except (AttributeError, OSError, ValueError):
+    pass
+
 _STDOUT_ENCODING = getattr(sys.stdout, 'encoding', 'utf-8') or 'utf-8'
 
 
@@ -351,7 +359,7 @@ def fix_contamination(directory_or_file: str, extensions: Optional[List[str]] = 
                     bak_path = filepath + '.bak'
                     shutil.copy2(filepath, bak_path)
 
-                with open(filepath, 'w', encoding='utf-8') as f:
+                with open(filepath, 'w', encoding='utf-8', newline='\n') as f:
                     f.write(repaired_text)
 
                 sp(f"  [修复] {rel:<55} UTF-8部分={utf8_len}B + GBK部分={gbk_len}B")

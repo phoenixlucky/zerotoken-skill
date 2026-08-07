@@ -34,7 +34,15 @@ import sys
 from typing import List, Optional, Tuple
 
 
-# -- 安全打印（解决 #6: GBK 控制台 UnicodeEncodeError）--
+# ── 安全打印（解决 #6: GBK 控制台 UnicodeEncodeError）──
+# 规范 2/15：不依赖系统默认字符集，显式把 stdio 切到 UTF-8
+# （Python 3.7+；旧版本或不可重配置流保持原样）
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except (AttributeError, OSError, ValueError):
+    pass
+
 _STDOUT_ENCODING = getattr(sys.stdout, 'encoding', 'utf-8') or 'utf-8'
 
 
@@ -210,7 +218,7 @@ def convert_to_utf8(directory: str, extensions: Optional[List[str]] = None,
                 bak_path = filepath + '.bak'
                 shutil.copy2(filepath, bak_path)
 
-            with open(filepath, 'w', encoding='utf-8') as f:
+            with open(filepath, 'w', encoding='utf-8', newline='\n') as f:
                 f.write(content)
 
             rel = os.path.relpath(filepath, directory)

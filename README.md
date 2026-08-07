@@ -21,6 +21,12 @@
 >
 > ✅ **适用于：** Reasonix / Codex CLI / OpenCode / Hermes / Cline 等主流 Agent 工具。一次学习，全平台受益。
 
+<div align="center">
+
+<img src="assets/zerotoken-banner.webp" alt="ZeroToken Skill 概览" width="480">
+
+</div>
+
 ---
 
 ## 🔌 平台集成指南

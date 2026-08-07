@@ -120,14 +120,14 @@ metadata:
 
 | 优先级 | 方式 | 条件 | 命令 |
 |--------|------|------|------|
-| 🥇 Chrome MCP | 通过真实浏览器+百度搜索 | `.reasonix/skills/mcp-streamable-connect/mcp_call.py` 存在且 MCP 服务在线 | `python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 关键词` |
+| 🥇 Chrome MCP | 通过真实浏览器搜索（不限百度，网络可用时各种搜索都行） | `.reasonix/skills/mcp-streamable-connect/mcp_call.py` 存在且 MCP 服务在线 | `python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 关键词` |
 | 🥈 web_fetch | 备选，仅 Chrome MCP 不可用时 | 无条件 | `web_fetch` 工具 |
 
 > **为什么？** web_fetch 依赖 Bing 搜索结果不稳定（曾返回完全无关内容），Chrome MCP 通过真实浏览器搜索，结果精准可控。
 
 ### Chrome MCP 能搜什么
 
-Chrome MCP 底层是真实浏览器（Playwright/Chrome），能访问 **百度搜索引擎能搜到的任何内容**，包括但不限于：
+Chrome MCP 底层是真实浏览器（Playwright/Chrome），能访问 **网络可搜索到的任何内容**（百度只是默认引擎，Bing / Google 等都可按需切换），包括但不限于：
 
 | 场景 | 示例 | 命令 |
 |------|------|------|
@@ -136,7 +136,9 @@ Chrome MCP 底层是真实浏览器（Playwright/Chrome），能访问 **百度�
 | 🏢 公司/产品信息 | 查询公司背景、产品评测 | `python mcp_call.py search 公司名 评价` |
 | 📰 最新资讯 | 今日热点、行业动态 | `python mcp_call.py search 今日 热点` |
 
-> **无需为每个平台找专用的 MCP server** — Chrome MCP + 百度搜索 通杀所有反爬严格的网站。
+> **无需为每个平台找专用的 MCP server** — Chrome MCP 真实浏览器通杀所有反爬严格的网站；搜索引擎不限百度，按检索效果自由选择。
+
+**若 Chrome MCP 不可用**：允许使用当前网络可用的其他搜索方式（如 `web_fetch` 或任何能出结果的搜索途径），不要因为首选方案不可用就放弃搜索。
 
 ### 什么情况走 web_fetch（备选）
 

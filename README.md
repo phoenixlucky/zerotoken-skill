@@ -293,10 +293,10 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 
 | 优先级 | 方式 | 条件 | 命令 |
 |--------|------|------|------|
-| 🥇 **Chrome MCP** | 真实浏览器 + 百度搜索 | `mcp_call.py` 存在且服务在线 | `python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 关键词` |
+| 🥇 **Chrome MCP** | 真实浏览器搜索（不限百度，网络可用时各种搜索都行） | `mcp_call.py` 存在且服务在线 | `python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 关键词` |
 | 🥈 **web_fetch** | 备选 | 仅当 Chrome MCP 不可用 | `web_fetch` 工具 |
 
-> **为什么？** web_fetch 依赖 Bing 搜索结果不稳定（曾返回完全无关内容），Chrome MCP 通过真实浏览器搜索，结果精准可控。Chrome MCP + 百度搜索可通杀微博/知乎/小红书等所有反爬严格的平台，无需为每个平台找专用 MCP server。
+> **为什么？** web_fetch 依赖 Bing 搜索结果不稳定（曾返回完全无关内容），Chrome MCP 通过真实浏览器搜索，结果精准可控。**搜索引擎不限百度**：百度只是默认，网络可用时各种搜索都行（Bing / Google / 知乎 / 必应国内版等），按检索效果自由选择。Chrome MCP 真实浏览器可通杀微博/知乎/小红书等所有反爬严格的平台，无需为每个平台找专用 MCP server。**若 Chrome MCP 不可用**，允许使用当前网络可用的其他搜索方式，不要因为首选方案不可用就放弃搜索。
 
 **❌ 禁用行为：**
 - 禁止用 web_fetch 直抓社交媒体（微博/知乎/小红书等）— 登录墙/反爬 100% 失败

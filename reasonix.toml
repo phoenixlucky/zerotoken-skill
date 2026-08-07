@@ -1,4 +1,0 @@
-[permissions]
-# General tool permissions for the skill's file-system and git workflows.
-# These are declared in SKILL.md's security disclosure.
-allow = ["Bash", "Read", "Edit", "Write"]

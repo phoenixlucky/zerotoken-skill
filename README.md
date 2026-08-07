@@ -115,7 +115,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 | **C. 📦 多文件任务** | 短计划 → 分批加载 → 按步推进 | 🟡 中 |
 | **D. 📚 大资料总结** | 要点 + 证据位置，不逐段复述 | 🟠 中高 |
 | **E. 🏗️ 重大架构调整** | 诊断根因 → 确认方案 → 增量迁移 | 🔴 高（但可控） |
-| **F. 🖥️ Windows/PowerShell 环境适配** | 8 条陷阱规则 + 脚本工具，解决中文+Windows 工作流痛点 | 🟢 低 |
+| **F. 🖥️ Windows/PowerShell 环境适配** | 12 条陷阱规则 + 脚本工具，解决中文+Windows 工作流痛点 | 🟢 低 |
 
 ---
 
@@ -253,7 +253,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 **行为表现：**
 ```
 🏷️ 识别 → "Windows/PowerShell + 中文环境，启用 F 模式"
-   📋 检查 → 8 条已知陷阱匹配当前症状
+   📋 检查 → 12 条已知陷阱匹配当前症状
       🛠️ 解决 → 对应脚本工具或安全模板处理
          📝 输出 → 修复结果 + 验证确认
 ```
@@ -261,6 +261,75 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 **不做什么：** ❌ 不在 bash 命令中直接嵌入含 `+` 的中文 ❌ 不使用 `Add-Content` 追加中文 ❌ 不直接在 PowerShell 中 `print()` 中文 ❌ 不忽略编码问题强行操作
 
 **内置工具包（`scripts/`）：** `safe_io.py`（安全读写）、`detect_gbk_contamination.py`（检测修复 GBK 污染）、`batch_edit.py`（批量编辑）、`fix_encoding.py`（编码转换）、`verify_output.py`（验证输出）、`init_env.ps1`（环境初始化）
+
+---
+
+## ⚔️ AI 编程总纲（尉缭子十原则）
+
+> **将军受命，君必先谋于庙，行令于廷，君身以斧钺授将。曰：左、右、中军皆有分职；若逾分而上请者死；军无二令，二令者诛；留令者诛；失令者诛。**
+
+核心不是军事，而是 **权限边界、单一指令、责任明确、执行一致**。与 ZeroToken 纪律互补：**省 token 是效率，尉缭子是秩序**。
+
+| # | 原则 | 要求 |
+|:-:|------|------|
+| 1 | **先谋后动（谋于庙）** | 编码前先理解需求、明确目标、确认方案后再实现 |
+| 2 | **统一方案（行令于廷）** | 全仓库统一架构/命名/目录/接口/风格 |
+| 3 | **职责明确（分职）** | 每层各司其职，不得越级 |
+| 4 | **不得越权（逾分请者）** | 只改自己职责范围，不顺手重构 |
+| 5 | **唯一命令（军无二令）** | 任何时刻只有一个最终需求 |
+| 6 | **禁止旧令（留令者）** | 新令既下，旧令即废，不留兼容层 |
+| 7 | **严格执行（失令者）** | 已确认要求全部落实，不遗漏边界 |
+| 8 | **最小改动** | 修改范围越小越好，每次提交只解决一个问题 |
+| 9 | **可追溯** | 说明为什么改、改了哪些、影响、如何验证 |
+| 10 | **验证先于结束** | 编译/运行/需求/边界/回归全部验证通过才宣布完成 |
+
+> 🏛️ **System Prompt 总纲：** 臣缭以为：AI 编程，当先谋后动，后行其令。未明需求，不得编码；未定方案，不得实现。各模块各司其职，不得越权修改；一事唯遵一令，不得两令并行；新令既下，旧令即废，不得留存；既受其令，不得遗漏，不得擅改，不得借机重构。每次修改，应最小影响、责任明确、过程可追溯、结果可验证。凡编码者，以稳定为本，以一致为法，以执行为先。
+
+---
+
+## 🔍 搜索资料规范
+
+**当任务需要搜索外部资料时，按以下优先级执行：**
+
+| 优先级 | 方式 | 条件 | 命令 |
+|--------|------|------|------|
+| 🥇 **Chrome MCP** | 真实浏览器 + 百度搜索 | `mcp_call.py` 存在且服务在线 | `python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 关键词` |
+| 🥈 **web_fetch** | 备选 | 仅当 Chrome MCP 不可用 | `web_fetch` 工具 |
+
+> **为什么？** web_fetch 依赖 Bing 搜索结果不稳定（曾返回完全无关内容），Chrome MCP 通过真实浏览器搜索，结果精准可控。Chrome MCP + 百度搜索可通杀微博/知乎/小红书等所有反爬严格的平台，无需为每个平台找专用 MCP server。
+
+**❌ 禁用行为：**
+- 禁止用 web_fetch 直抓社交媒体（微博/知乎/小红书等）— 登录墙/反爬 100% 失败
+- 禁止自己写 Playwright/Puppeteer 脚本 — `mcp_call.py` 一行搞定
+- 禁止用 web_fetch 直连搜索引擎（Google/百度/Bing）— 会被机器人检测拦截
+- Windows 下必须用 `mcp_call.py`（Python 包装），不直接调 `node mcp-bridge.js`
+
+---
+
+## 📝 精准提示词模板
+
+```text
+目标：<要解决什么>
+输入：<数据/代码/错误/位置>
+约束：<不能做什么/必须满足什么>
+输出：<格式/字段/长度/验收标准>
+预算：<直接回答 / 最小读取 / 需要验证>（可省略，默认最小读取）
+```
+
+用户请求含糊时，先用此模板提炼再执行。只有缺少关键输入会导致结果不可用时才追问，且一次只问 1 个问题。
+
+---
+
+## 📜 Unicode 安全编码规范
+
+全项目硬性编码规范，详见 **[`docs/unicode-encoding-spec.md`](docs/unicode-encoding-spec.md)**（15 条硬性规定 + 项目执行细则）：
+
+- 🔤 文本文件统一 **UTF-8**（`.ps1` 例外，必须 UTF-8 with BOM）
+- 📖 `open()` 一律显式 `encoding='utf-8'`，写模式加 `newline='\n'` 防 CRLF 污染
+- 🚫 禁止 `errors='replace'` 静默损坏数据；非 UTF-8/UTF-16/GB18030 文件显式抛错
+- 🖥️ Python 控制台输出优先 `sys.stdout.reconfigure(encoding='utf-8')`
+- 🌐 HTTP 头显式 `charset=utf-8`；JSON 用 `ensure_ascii=False`
+- 🧪 完成后运行 `python scripts/audit_encoding.py --root . --out audit_result.txt` 全项目审计（检测非 UTF-8 / 替换字符 / 混合换行）
 
 ---
 
@@ -293,12 +362,14 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 所有详细规范定义在 **[`SKILL.md`](SKILL.md)**，配套脚本工具在 **`scripts/`** 目录：
 
 - 📐 **快速决策表** — 按请求类型匹配模式与工具链
-- 🧭 **核心原则** — 先分类再预算、压缩提示词、渐进读取、先给结果、不复述
+- 🧭 **核心原则** — 先分类再预算、压缩提示词、渐进读取、先给结果、不复述、设置停止条件
 - ⚔️ **AI 编程总纲（尉缭子十原则）** — 权限边界、单一指令、责任明确、执行一致，附 System Prompt 总纲
-- 📝 **精准提示词模板** — 目标 → 输入 → 约束 → 输出
+- 📝 **精准提示词模板** — 目标 → 输入 → 约束 → 输出 → 预算
+- 🔍 **搜索资料规范** — Chrome MCP 优先，web_fetch 备选
+- 📜 **Unicode 安全编码规范** — 全项目编码硬性规定，见 `docs/unicode-encoding-spec.md`
 - 🔄 **六种任务模式详解 (A-F)** — 每种模式的完整行为规范
-- 🖥️ **F. Windows/PowerShell 环境适配** — 8 条已知陷阱与解决方案
-- 🛠️ **scripts/ 工具集** — `safe_io.py`, `detect_gbk_contamination.py`, `batch_edit.py`, `fix_encoding.py`, `verify_output.py`, `init_env.ps1`
+- 🖥️ **F. Windows/PowerShell 环境适配** — 12 条已知陷阱与解决方案
+- 🛠️ **scripts/ 工具集** — `safe_io.py`, `detect_gbk_contamination.py`, `batch_edit.py`, `fix_encoding.py`, `verify_output.py`, `audit_encoding.py`, `init_env.ps1`
 - ⚡ **ZeroToken 强化模式 & 退出条件**
 - 🛡️ **质量底线** — 压缩不降质的硬性要求
 
@@ -321,6 +392,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 | 4 | **先给结果** | 结论先行，细节随后 |
 | 5 | **不复述** | 不重复用户已说的内容 |
 | 6 | **plan 只写顶层步骤** | 避免 bullet 子步骤被 todo 系统注册为独立待办项 |
+| 7 | **设置停止条件** | 已定位目标、必要调用方和验证方式后即停止搜索，不重复读取未变化的文件 |
 
 ---
 

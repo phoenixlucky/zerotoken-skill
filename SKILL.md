@@ -50,7 +50,7 @@ metadata:
 
 ---
 
-## 快速决策表
+## 📐 快速决策表
 
 | 用户请求特征 | 模式 | 首轮输出 | 工具偏好 |
 |---|---|---|---|
@@ -65,7 +65,7 @@ metadata:
 
 ---
 
-## 核心原则
+## 🧭 核心原则
 
 1. **先分类，再预算** — 按上表决定上下文深度，不默认全量读取。
 2. **压缩提示词** — 目标 + 已知输入 + 约束 + 验收格式；只在缺失项会改变结果时追问。
@@ -166,8 +166,9 @@ python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 微博 明星 
 
 # ✅ 搜新闻
 python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
+```
 
-## 精准提示词模板
+## 📝 精准提示词模板
 
 ```text
 目标：<要解决什么>
@@ -179,7 +180,7 @@ python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
 
 用户请求含糊时，先用此模板提炼再执行。只有缺少关键输入会导致结果不可用时才追问，且一次只问 1 个问题。
 
-## 任务模式详解
+## 🔄 任务模式详解
 
 ### A. 简单问答
 - 直接回答，不列计划、不问澄清（除非缺关键对象）
@@ -238,7 +239,7 @@ python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
 - **不提前优化**：只重构当前确实有问题的部分，不顺手"优化"无关代码。
 - **留退出路径**：每一步都可以撤销或暂停，不做不可逆的一次性大改。
 
-### F. 🪟 Windows/PowerShell 环境适配 — "当前是 Windows/PowerShell + 中文环境"
+### F. 🖥️ Windows/PowerShell 环境适配 — "当前是 Windows/PowerShell + 中文环境"
 
 > **⚠️ 此模式为可选环境适配，非默认行为。** 仅当以下条件同时满足时才启用。macOS / Linux 用户或纯英文工作流完全不需要此模式。
 
@@ -328,7 +329,7 @@ with open(path, 'a', encoding='utf-8', newline='\n') as f:
 
 ---
 
-## ZeroToken 强化模式
+## ⚡ ZeroToken 强化模式
 
 当用户明确要求省 token / 简洁 / 减少上下文时，在对应模式基础上额外：
 
@@ -337,7 +338,7 @@ with open(path, 'a', encoding='utf-8', newline='\n') as f:
 - 每次读取或工具调用前写明要验证的假设；得到答案即停止，不为“保险”重复调用
 - 输出只保留：做了什么 + 结果 + 用户下一步需要的操作（如果有）
 
-## 输出格式
+## 📤 输出格式
 
 ```
 已完成：...
@@ -367,13 +368,13 @@ with open(path, 'a', encoding='utf-8', newline='\n') as f:
 状态：进行中 | 已完成
 ```
 
-## 何时不使用 ZeroToken
+## 🚫 何时不使用 ZeroToken
 
 - 用户明确要求：详细解释、教学式展开、头脑风暴、广泛探索
 - 任务涉及：法律、医疗、金融决策、时间敏感信息（准确性优先，不省 token）
 - 用户明确说"请详细说明"
 
-## 质量底线
+## 🛡️ 质量底线
 
 - 不省略安全、准确性和用户明确要求
 - 不跳过必要测试来制造"省 token"假象

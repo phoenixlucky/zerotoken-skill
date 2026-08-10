@@ -2,14 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.9.1] - 2026-08-08
-
-### Changed
-- 版本号 1.9.0 → 1.9.1
-
 ## [Unreleased]
 
+## [1.10.0] - 2026-08-10
+
 ### Changed
+- 版本号 1.9.1 → 1.10.0
 - 文档排版与结构规范化：修复 `SKILL.md` 未闭合代码块（「精准提示词模板」标题此前被吞进代码块）；`SKILL.md` 顶层章节标题统一 emoji 前缀（与 README 一致）；`README.md` 与 `SKILL.md` 重复的 5 个章节（尉缭子十原则、搜索资料规范、精准提示词模板、ZeroToken 强化模式、退出条件）精简为摘要 + 锚点链接，单一信息源；修复 `docs/unicode-encoding-spec.md` 死链引用
 - 搜索资料规范放宽：Chrome MCP 搜索引擎**不限百度**（百度只是默认，网络可用时 Bing / Google / 知乎等按检索效果自由选择）；Chrome MCP 不可用时允许使用当前网络可用的其他搜索方式（含 `web_fetch`），不再因首选方案不可用而放弃搜索。同步更新 `README.md`、`SKILL.md`
 - 落地「Unicode 安全编码规范」（新增 `docs/unicode-encoding-spec.md`，15 条硬性规定 + 项目执行细则；AGENTS.md 增加编码规范约束）
@@ -21,6 +19,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - 新增 `scripts/audit_encoding.py` 全项目编码审计工具（UTF-8 / BOM / 替换字符 / 混合换行检测）
+
+## [1.9.1] - 2026-08-08
+
+### Changed
+- 版本号 1.9.0 → 1.9.1
 
 ## [1.9.0] - 2026-08-07
 

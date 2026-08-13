@@ -61,7 +61,7 @@ metadata:
 | 反复出同类 bug / 加功能越来越难 / 架构与需求不匹配 / 需要大改 | **E. 重大重构/架构调整** | 问题诊断 + 目标方案 + 迁移路线图 | ``codegraph_context`` → ``explore`` → ``codegraph_trace`` → 分批 ``read_file`` |
 | 用户明确说"省 token" | **ZeroToken 强化** | 最短可执行输出 | 同上，但跳过所有非必要探索 |
 | 用户说"详细解释/教学" | **➡ 退出 ZeroToken** | 常规详尽模式 | 不限 |
-| 当前在 Windows/PowerShell 下工作，有中文文本 | **F. Windows/PowerShell 环境适配** | 按 12 条陷阱规则调整工作流 | `write_file`(写 .py 脚本) → `python`(执行) → `git config core.quotepath false` → `complete_step`(签收) |
+| 当前在 Windows/PowerShell 下工作，有中文文本 | **F. Windows/PowerShell 环境适配** | 按 13 条陷阱规则调整工作流 | `write_file`(写 .py 脚本) → `python`(执行) → `git config core.quotepath false` → `complete_step`(签收) |
 
 ---
 
@@ -263,6 +263,7 @@ python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
 | 10 | **PowerShell `&&` 链式操作不兼容** | PowerShell 不支持 bash 风格的 `&&` 运算符，`cmd1 && cmd2` 报语法错误 | ✅ 用 `;` 无条件链式<br>✅ 用 `if ($?) { ... }` 做条件链式 |
 | 11 | **内联 `python -c` 中文 SyntaxError** | `python -c "含中文的代码"` 在 PowerShell 下因编码问题导致 SyntaxError | ❌ 不要用 `python -c` 传入含中文的代码<br>✅ 改为 `write_file` 写 `.py` 脚本执行 |
 | 12 | **终端显示层中文乱码（文件内容正确）** | PowerShell 终端显示中文为乱码/问号，但文件内容实际正确（GBK 终端显示 UTF-8 编码文件） | ✅ 用文件大小/行数验证<br>✅ 用 `chcp 65001` 切换终端到 UTF-8 |
+| 13 | **PowerShell 读取附件时中文乱码显示** | 用 `Get-Content` / `type` 读取附件（用户上传的 .md/.txt/.csv 等）时中文显示为乱码（如 `鐗堟湰鍙?1.9.1`），但用 `read_file` 或编辑器打开内容正常<br>根因：Windows PowerShell 5.1 的 `Get-Content` 默认按 ANSI 代码页（中文系统为 GBK/936）解码无 BOM 的 UTF-8 文件，属**显示层**问题，文件本身未损坏<br>⚠️ 若把"显示乱码"误判为"文件被污染"并盲目转码重写，反而会造成真正的污染 | ✅ **优先用 `read_file` 工具读取附件**（按 UTF-8 解码，显示正确）<br>✅ 必须在 PowerShell 中读时显式指定编码：`Get-Content -Encoding UTF8 附件.md`（PS 7+ 默认 UTF-8；5.1 必须加 `-Encoding UTF8`）<br>✅ 附件本身是 GBK/UTF-16 等非 UTF-8 编码时，用 `safe_read()` 自动检测（UTF-8 BOM / UTF-16 BOM / GB18030）<br>✅ 先确认附件真实编码再处理；显示乱码≠文件损坏，禁止据此盲目转码 |
 
 #### 脚本工具（scripts/ 目录）
 
@@ -270,7 +271,7 @@ python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
 
 | 脚本 | 解决问题 | 用法示例 |
 |------|----------|----------|
-| `safe_io.py` | #2 编码不一致（UTF-8 BOM / UTF-16 BOM / GB18030） / #6 无法 print 中文 / #8 安全追加替代 Add-Content | `from safe_io import safe_read, safe_write, safe_append, write_result` |
+| `safe_io.py` | #2 编码不一致（UTF-8 BOM / UTF-16 BOM / GB18030） / #6 无法 print 中文 / #8 安全追加替代 Add-Content / #13 附件乱码读取（自动检测编码） | `from safe_io import safe_read, safe_write, safe_append, write_result` |
 | `detect_gbk_contamination.py` | #8 检测修复 GBK 编码污染 | `python scripts/detect_gbk_contamination.py scan .` / `python scripts/detect_gbk_contamination.py fix . --backup` |
 | `batch_edit.py` | #3 edit_file 连续编辑阻塞 | `python scripts/batch_edit.py file.json replacements.json` |
 | `fix_encoding.py` | #2 批量编码转换 | `python scripts/fix_encoding.py scan .` / `python scripts/fix_encoding.py convert . --backup` |
@@ -326,6 +327,7 @@ with open(path, 'a', encoding='utf-8', newline='\n') as f:
 ❌ **不使用 `python -c` 内联含中文的代码** — 改用 `write_file` + `python "script.py"` 两步法
 ❌ **不使用 `&&` 链式命令** — PowerShell 不支持，改用 `;` 或 `if ($?) { ... }`
 ❌ **不依赖终端输出验证中文内容** — 用文件内容验证替代
+❌ **不用 `Get-Content` 直接查看含中文的附件** — 5.1 默认按 GBK 解码会显示乱码，改用 `read_file` 工具或 `Get-Content -Encoding UTF8`；显示乱码≠文件损坏，禁止据此盲目转码
 
 ---
 

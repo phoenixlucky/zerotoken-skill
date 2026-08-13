@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- 新增陷阱 #13：PowerShell 读取附件时中文乱码显示（Get-Content 默认按 ANSI/GBK 解码
+  UTF-8 无 BOM 文件），属显示层问题、文件未损坏。修复方案：优先用 `read_file` 工具
+  读取附件；必须在 PowerShell 中读时显式 `Get-Content -Encoding UTF8`；非 UTF-8 附件
+  用 `safe_io.safe_read()` 自动检测编码；禁止把显示乱码误判为文件污染而盲目转码
+- 同步更新 `SKILL.md`（陷阱表、模式速查表、不做什么）、`README.md`（3 处引用）、
+  `docs/unicode-encoding-spec.md`（读取附件/文件编码细则）
+
 ## [1.10.0] - 2026-08-10
 
 ### Changed

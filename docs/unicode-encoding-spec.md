@@ -55,6 +55,11 @@
   `UnicodeEncodeError`。
 - 终端显示：PowerShell 中配合 `chcp 65001` 查看中文输出；若仍乱码，属于终端显示层
   问题，文件本身编码正确，用 `read_file` 工具验证内容。
+- **读取附件/文件**：Windows PowerShell 5.1 的 `Get-Content` 默认按 ANSI 代码页（GBK）
+  解码无 BOM 的 UTF-8 文件，含中文的附件会**显示乱码**（如 `鐗堟湰鍙?1.9.1`），但文件
+  未损坏。优先用 `read_file` 工具读取；必须在 PowerShell 中读时显式指定
+  `Get-Content -Encoding UTF8`；附件是 GBK/UTF-16 等非 UTF-8 编码时用
+  `safe_io.safe_read()` 自动检测转码。显示乱码≠文件损坏，禁止据此盲目转码。
 - **禁止**用 PowerShell `Add-Content` 向 UTF-8 文件追加中文（默认 GBK 写入会污染），
   改用 Python `open(path, 'a', encoding='utf-8')` 或 `safe_io.safe_append`。
 

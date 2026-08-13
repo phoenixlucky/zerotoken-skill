@@ -121,7 +121,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 | **C. 📦 多文件任务** | 短计划 → 分批加载 → 按步推进 | 🟡 中 |
 | **D. 📚 大资料总结** | 要点 + 证据位置，不逐段复述 | 🟠 中高 |
 | **E. 🏗️ 重大架构调整** | 诊断根因 → 确认方案 → 增量迁移 | 🔴 高（但可控） |
-| **F. 🖥️ Windows/PowerShell 环境适配** | 12 条陷阱规则 + 脚本工具，解决中文+Windows 工作流痛点 | 🟢 低 |
+| **F. 🖥️ Windows/PowerShell 环境适配** | 13 条陷阱规则 + 脚本工具，解决中文+Windows 工作流痛点 | 🟢 低 |
 
 ---
 
@@ -259,7 +259,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 **行为表现：**
 ```
 🏷️ 识别 → "Windows/PowerShell + 中文环境，启用 F 模式"
-   📋 检查 → 12 条已知陷阱匹配当前症状
+   📋 检查 → 13 条已知陷阱匹配当前症状
       🛠️ 解决 → 对应脚本工具或安全模板处理
          📝 输出 → 修复结果 + 验证确认
 ```
@@ -337,7 +337,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 - 🔍 **搜索资料规范** — Chrome MCP 优先，web_fetch 备选
 - 📜 **Unicode 安全编码规范** — 全项目编码硬性规定，见 `docs/unicode-encoding-spec.md`
 - 🔄 **六种任务模式详解 (A-F)** — 每种模式的完整行为规范
-- 🖥️ **F. Windows/PowerShell 环境适配** — 12 条已知陷阱与解决方案
+- 🖥️ **F. Windows/PowerShell 环境适配** — 13 条已知陷阱与解决方案
 - 🛠️ **scripts/ 工具集** — `safe_io.py`, `detect_gbk_contamination.py`, `batch_edit.py`, `fix_encoding.py`, `verify_output.py`, `audit_encoding.py`, `init_env.ps1`
 - ⚡ **ZeroToken 强化模式 & 退出条件**
 - 🛡️ **质量底线** — 压缩不降质的硬性要求

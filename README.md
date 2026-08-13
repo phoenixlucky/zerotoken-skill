@@ -8,7 +8,7 @@
 >
 > 💬 **用不完，根本用不完，妈妈再也不用担心我缺 token 了。**
 
-[![Version](https://img.shields.io/badge/version-1.10.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.10.1-blue.svg)]()
 [![License](https://img.shields.io/badge/license-GPL--3.0-green.svg)](LICENSE)
 [![Author](https://img.shields.io/badge/author-phoenixlucky-orange.svg)]()
 </div>

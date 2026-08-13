@@ -2,7 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.10.1] - 2026-08-13
+
+### Changed
+- 版本号 1.10.0 → 1.10.1
 
 ### Added
 - 新增陷阱 #13：PowerShell 读取附件时中文乱码显示（Get-Content 默认按 ANSI/GBK 解码

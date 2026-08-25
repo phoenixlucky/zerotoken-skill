@@ -30,54 +30,13 @@ from typing import List, Tuple
 
 
 # ── 安全打印（解决 #6: GBK 控制台 UnicodeEncodeError）──
-# 规范 2/15：不依赖系统默认字符集，显式把 stdio 切到 UTF-8
-# （Python 3.7+；旧版本或不可重配置流保持原样）
-try:
-    sys.stdout.reconfigure(encoding='utf-8')
-    sys.stderr.reconfigure(encoding='utf-8')
-except (AttributeError, OSError, ValueError):
-    pass
+# 统一实现见 safe_io.py（ensure_utf8_stdio / sp 别名），
+# 此处仅复用，不再各脚本维护副本。
+from safe_io import ensure_utf8_stdio, read_text, safe_print, safe_write
 
-_STDOUT_ENCODING = getattr(sys.stdout, 'encoding', 'utf-8') or 'utf-8'
+sp = safe_print  # 兼容本文件既有的调用名
 
-
-def sp(*args, **kwargs) -> None:
-    """safe_print：GBK 环境不崩溃。"""
-    try:
-        print(*args, **kwargs)
-    except UnicodeEncodeError:
-        sa = [a.encode(_STDOUT_ENCODING, errors='replace').decode(
-              _STDOUT_ENCODING, errors='replace')
-              if isinstance(a, str) else str(a) for a in args]
-        print(*sa, **kwargs)
-
-
-def safe_read(path: str) -> str:
-    """安全读取（同 safe_io.py，无依赖版本）。
-
-    规范 6/14：显式指定编码；非 UTF-8 时按 UTF-16 → GB18030 依次尝试，
-    全部失败则抛出异常而非静默替换，避免数据被无声损坏。
-    """
-    with open(path, 'rb') as f:
-        raw = f.read()
-    if raw.startswith(b'\xef\xbb\xbf'):
-        return raw.decode('utf-8-sig')
-    if raw.startswith(b'\xff\xfe') or raw.startswith(b'\xfe\xff'):
-        try:
-            return raw.decode('utf-16')
-        except UnicodeDecodeError:
-            pass
-    try:
-        return raw.decode('utf-8')
-    except UnicodeDecodeError:
-        try:
-            return raw.decode('gb18030')
-        except UnicodeDecodeError:
-            raise ValueError(
-                f"无法解码文件（非 UTF-8/UTF-16/GB18030）: {path}\n"
-                f"请先运行 python scripts/fix_encoding.py inspect \"{path}\" "
-                "确认原编码后再转换，禁止盲目转换。"
-            )
+ensure_utf8_stdio()
 
 
 def safe_write(path: str, content: str) -> None:
@@ -143,7 +102,7 @@ def main():
     sp(f"replacements: {len(replacements)}")
     sp("-" * 40)
 
-    content = safe_read(path)
+    content = read_text(path)
     new_content = apply_replacements(content, replacements, path)
 
     if content == new_content:

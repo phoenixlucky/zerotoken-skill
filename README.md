@@ -8,7 +8,7 @@
 >
 > 💬 **用不完，根本用不完，妈妈再也不用担心我缺 token 了。**
 
-[![Version](https://img.shields.io/badge/version-1.10.1-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.11.0-blue.svg)]()
 [![License](https://img.shields.io/badge/license-GPL--3.0-green.svg)](LICENSE)
 [![Author](https://img.shields.io/badge/author-phoenixlucky-orange.svg)]()
 </div>
@@ -121,7 +121,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 | **C. 📦 多文件任务** | 短计划 → 分批加载 → 按步推进 | 🟡 中 |
 | **D. 📚 大资料总结** | 要点 + 证据位置，不逐段复述 | 🟠 中高 |
 | **E. 🏗️ 重大架构调整** | 诊断根因 → 确认方案 → 增量迁移 | 🔴 高（但可控） |
-| **F. 🖥️ Windows/PowerShell 环境适配** | 13 条陷阱规则 + 脚本工具，解决中文+Windows 工作流痛点 | 🟢 低 |
+| **F. 🖥️ Windows/PowerShell 环境适配** | 15 条陷阱规则 + 脚本工具，解决中文+Windows 工作流痛点 | 🟢 低 |
 
 ---
 
@@ -259,14 +259,14 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 **行为表现：**
 ```
 🏷️ 识别 → "Windows/PowerShell + 中文环境，启用 F 模式"
-   📋 检查 → 13 条已知陷阱匹配当前症状
+   📋 检查 → 15 条已知陷阱匹配当前症状
       🛠️ 解决 → 对应脚本工具或安全模板处理
          📝 输出 → 修复结果 + 验证确认
 ```
 
-**不做什么：** ❌ 不在 bash 命令中直接嵌入含 `+` 的中文 ❌ 不使用 `Add-Content` 追加中文 ❌ 不直接在 PowerShell 中 `print()` 中文 ❌ 不忽略编码问题强行操作
+**不做什么：** ❌ 不在 bash 命令中直接嵌入含 `+` 的中文 ❌ 不使用 `Add-Content` 追加中文 ❌ 不用 PS 5.1 的 `Set-Content` / `Out-File` 默认编码写非 ASCII 内容 ❌ 不直接在 PowerShell 中 `print()` 中文 ❌ 不忽略编码问题强行操作
 
-**内置工具包（`scripts/`）：** `safe_io.py`（安全读写）、`detect_gbk_contamination.py`（检测修复 GBK 污染）、`batch_edit.py`（批量编辑）、`fix_encoding.py`（编码转换）、`verify_output.py`（验证输出）、`init_env.ps1`（环境初始化）
+**内置工具包（`scripts/`）：** `safe_io.py`（编码自动检测 + 安全读写/追加，unknown 显式抛错）、`detect_gbk_contamination.py`（检测修复 GBK 污染）、`batch_edit.py`（批量编辑）、`fix_encoding.py`（编码转换）、`verify_output.py`（验证输出）、`init_env.ps1`（环境初始化）
 
 ---
 
@@ -337,7 +337,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 - 🔍 **搜索资料规范** — Chrome MCP 优先，web_fetch 备选
 - 📜 **Unicode 安全编码规范** — 全项目编码硬性规定，见 `docs/unicode-encoding-spec.md`
 - 🔄 **六种任务模式详解 (A-F)** — 每种模式的完整行为规范
-- 🖥️ **F. Windows/PowerShell 环境适配** — 13 条已知陷阱与解决方案
+- 🖥️ **F. Windows/PowerShell 环境适配** — 15 条已知陷阱与解决方案
 - 🛠️ **scripts/ 工具集** — `safe_io.py`, `detect_gbk_contamination.py`, `batch_edit.py`, `fix_encoding.py`, `verify_output.py`, `audit_encoding.py`, `init_env.ps1`
 - ⚡ **ZeroToken 强化模式 & 退出条件**
 - 🛡️ **质量底线** — 压缩不降质的硬性要求

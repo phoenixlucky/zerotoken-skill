@@ -1,6 +1,6 @@
 ---
 name: zerotoken-skill
-version: 1.10.1
+version: 1.11.0
 description: Token-efficient assistant discipline for concise answers and task execution. Use when the user asks for direct, low-token work, or invokes this skill; includes optional file and Windows encoding utilities declared below.
 metadata:
   security:
@@ -61,7 +61,7 @@ metadata:
 | 反复出同类 bug / 加功能越来越难 / 架构与需求不匹配 / 需要大改 | **E. 重大重构/架构调整** | 问题诊断 + 目标方案 + 迁移路线图 | ``codegraph_context`` → ``explore`` → ``codegraph_trace`` → 分批 ``read_file`` |
 | 用户明确说"省 token" | **ZeroToken 强化** | 最短可执行输出 | 同上，但跳过所有非必要探索 |
 | 用户说"详细解释/教学" | **➡ 退出 ZeroToken** | 常规详尽模式 | 不限 |
-| 当前在 Windows/PowerShell 下工作，有中文文本 | **F. Windows/PowerShell 环境适配** | 按 13 条陷阱规则调整工作流 | `write_file`(写 .py 脚本) → `python`(执行) → `git config core.quotepath false` → `complete_step`(签收) |
+| 当前在 Windows/PowerShell 下工作，有中文文本 | **F. Windows/PowerShell 环境适配** | 按 15 条陷阱规则调整工作流 | `write_file`(写 .py 脚本) → `python`(执行) → `git config core.quotepath false` → `complete_step`(签收) |
 
 ---
 
@@ -264,6 +264,8 @@ python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
 | 11 | **内联 `python -c` 中文 SyntaxError** | `python -c "含中文的代码"` 在 PowerShell 下因编码问题导致 SyntaxError | ❌ 不要用 `python -c` 传入含中文的代码<br>✅ 改为 `write_file` 写 `.py` 脚本执行 |
 | 12 | **终端显示层中文乱码（文件内容正确）** | PowerShell 终端显示中文为乱码/问号，但文件内容实际正确（GBK 终端显示 UTF-8 编码文件） | ✅ 用文件大小/行数验证<br>✅ 用 `chcp 65001` 切换终端到 UTF-8 |
 | 13 | **PowerShell 读取附件时中文乱码显示** | 用 `Get-Content` / `type` 读取附件（用户上传的 .md/.txt/.csv 等）时中文显示为乱码（如 `鐗堟湰鍙?1.9.1`），但用 `read_file` 或编辑器打开内容正常<br>根因：Windows PowerShell 5.1 的 `Get-Content` 默认按 ANSI 代码页（中文系统为 GBK/936）解码无 BOM 的 UTF-8 文件，属**显示层**问题，文件本身未损坏<br>⚠️ 若把"显示乱码"误判为"文件被污染"并盲目转码重写，反而会造成真正的污染 | ✅ **优先用 `read_file` 工具读取附件**（按 UTF-8 解码，显示正确）<br>✅ 必须在 PowerShell 中读时显式指定编码：`Get-Content -Encoding UTF8 附件.md`（PS 7+ 默认 UTF-8；5.1 必须加 `-Encoding UTF8`）<br>✅ 附件本身是 GBK/UTF-16 等非 UTF-8 编码时，用 `safe_read()` 自动检测（UTF-8 BOM / UTF-16 BOM / GB18030）<br>✅ 先确认附件真实编码再处理；显示乱码≠文件损坏，禁止据此盲目转码 |
+| 14 | **PowerShell 写入命令默认编码不统一（写方向污染）** | PS 5.1 下 `Set-Content` / `Add-Content` 默认按 GBK 写出：纯汉字变成 GBK 字节（追加进 UTF-8 文件即污染），emoji 等字符**静默写成 `?` 丢字**；`Out-File` / `>` 重定向默认 UTF-16 LE（带 BOM）；`-Encoding UTF8` 写出的又是 UTF-8 **带 BOM**（部分工具解析异常）<br>已实测：同一 emoji 字符串经 `Set-Content` 默认写出为字节 `3F`（问号） | ✅ PowerShell 中写 UTF-8 文本统一用 .NET API：`[IO.File]::WriteAllText($path, $text, (New-Object System.Text.UTF8Encoding($false)))`（无 BOM；Append 用 `WriteAllText(..., $text, $enc)` 前先读原内容，或直接用 Python）<br>✅ 跨脚本/含中文的写入一律走 Python：`safe_io.safe_write()` / `safe_append()`（UTF-8 无 BOM + LF）<br>✅ 万不得已必须用 `Set-Content -Encoding UTF8` 时，知晓会带 BOM；禁止用其默认编码写任何非 ASCII 内容 |
+| 15 | **`Add-Content -Encoding UTF8` 追加不补换行导致粘连 + 带 BOM** | 即使显式指定 `-Encoding UTF8`，`Add-Content` 追加到不以换行结尾的文件时**不自动补换行**，两段内容直接粘连成一行（实测：`base` + 追加 → `base## 标题 ...`）；且写出的内容带 UTF-8 BOM | ✅ 追加操作改用 `safe_io.safe_append()`：自动补换行、UTF-8 无 BOM<br>✅ 纯 PowerShell 方案需自行判断末尾换行再拼接，复杂且易错，不建议<br>✅ 追加后发现首段粘连，检查是否由本陷阱导致，不要误判为内容错误 |
 
 #### 脚本工具（scripts/ 目录）
 
@@ -271,7 +273,7 @@ python .reasonix\skills\mcp-streamable-connect\mcp_call.py search 今日要闻
 
 | 脚本 | 解决问题 | 用法示例 |
 |------|----------|----------|
-| `safe_io.py` | #2 编码不一致（UTF-8 BOM / UTF-16 BOM / GB18030） / #6 无法 print 中文 / #8 安全追加替代 Add-Content / #13 附件乱码读取（自动检测编码） | `from safe_io import safe_read, safe_write, safe_append, write_result` |
+| `safe_io.py` | #2 编码不一致（UTF-8 BOM / UTF-16/32 BOM / GB18030） / #6 无法 print 中文 / #8 安全追加替代 Add-Content（自动补换行） / #13 附件乱码读取（自动检测编码） / #14 写方向编码统一（safe_write 无 BOM + LF） | `from safe_io import safe_read, read_text, sniff_encoding, decode_bytes, safe_write, safe_append, write_result`（编码无法确定时显式抛 UnknownEncodingError，不再静默替换） |
 | `detect_gbk_contamination.py` | #8 检测修复 GBK 编码污染 | `python scripts/detect_gbk_contamination.py scan .` / `python scripts/detect_gbk_contamination.py fix . --backup` |
 | `batch_edit.py` | #3 edit_file 连续编辑阻塞 | `python scripts/batch_edit.py file.json replacements.json` |
 | `fix_encoding.py` | #2 批量编码转换 | `python scripts/fix_encoding.py scan .` / `python scripts/fix_encoding.py convert . --backup` |
@@ -328,6 +330,8 @@ with open(path, 'a', encoding='utf-8', newline='\n') as f:
 ❌ **不使用 `&&` 链式命令** — PowerShell 不支持，改用 `;` 或 `if ($?) { ... }`
 ❌ **不依赖终端输出验证中文内容** — 用文件内容验证替代
 ❌ **不用 `Get-Content` 直接查看含中文的附件** — 5.1 默认按 GBK 解码会显示乱码，改用 `read_file` 工具或 `Get-Content -Encoding UTF8`；显示乱码≠文件损坏，禁止据此盲目转码
+❌ **不在 PS 5.1 中用 `Set-Content` / `Add-Content` / `Out-File` 的默认编码写任何非 ASCII 内容** — 默认 GBK 会污染 UTF-8 文件、emoji 静默变 `?`；写方向统一走 Python `safe_io.safe_write()` / `safe_append()`，或 .NET `[IO.File]::WriteAllText($path, $text, [Text.UTF8Encoding]::new($false))`
+❌ **不依赖 `Add-Content -Encoding UTF8` 做追加** — 仍会带 BOM 且目标不以换行结尾时不补换行导致内容粘连；统一用 `safe_io.safe_append()`
 
 ---
 

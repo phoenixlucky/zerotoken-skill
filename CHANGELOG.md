@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.11.0] - 2026-08-14
+
+### Added
+- 新增陷阱 #14：PS 5.1 写方向编码不统一 — `Set-Content`/`Add-Content` 默认按 GBK
+  写出（纯汉字→GBK 字节污染 UTF-8 文件；emoji 等字符**静默写成 `?` 丢字**，
+  字节级实测为 `3F`），`Out-File` / `>` 默认 UTF-16 LE，显式 `-Encoding UTF8`
+  又带 BOM。修复方案：PowerShell 内写 UTF-8 统一用
+  `[IO.File]::WriteAllText($path, $text, [Text.UTF8Encoding]::new($false))`；
+  含中文/emoji 的写入一律走 Python `safe_io.safe_write()` / `safe_append()`
+- 新增陷阱 #15：`Add-Content -Encoding UTF8` 追加到不以换行结尾的文件时**不补换行**
+  导致内容粘连（实测 `base` + 追加标题 → 粘连成一行），且带 BOM。
+  修复方案：统一改用 `safe_io.safe_append()`（自动补换行、UTF-8 无 BOM）
+- `docs/unicode-encoding-spec.md` 新增「文件写入编码矩阵（PS 5.1 实测）」：
+  Set-Content / Add-Content / Out-File / WriteAllText 四种方式的默认与显式行为对照
+- `scripts/init_env.ps1` 新增第 0 步：把当前会话 `[Console]::OutputEncoding` /
+  `$OutputEncoding` 切到 UTF-8（仅当前会话生效，不改系统全局设置），
+  缓解终端显示层中文乱码
+
+### Changed
+- `scripts/safe_io.py` 重构：新增 `sniff_encoding()`（BOM→UTF-8→GB18030 单一检测核心）
+  与 `decode_bytes()`；编码无法确定时显式抛 `UnknownEncodingError`，
+  **移除 `errors='replace'` 静默损坏兜底**（对齐 docs 规范「禁止静默替换」；
+  `strict=False` 仅限查看场景且禁止回写）。`safe_read` 保留为兼容别名，
+  UTF-16/32 解码统一交由对应 codec 剥离 BOM（避免开头残留 U+FEFF）
+- `scripts/safe_io.py` `safe_append()` 修复段间粘连：目标文件存在且不以换行结尾时
+  先补换行再追加，对齐 Add-Content「每次追加自带换行」语义
+- 五个脚本的重复 `_ensure_utf8_stdio` + `sp` 副本统一收敛到
+  `safe_io.ensure_utf8_stdio` / `safe_print`（batch_edit / verify_output /
+  fix_encoding / detect_gbk_contamination 仅 import 复用）；
+  `batch_edit.py` 删除行为分裂的本地 `safe_read`，改用统一的 `read_text`
+- 同步更新 `SKILL.md`（陷阱表 13→15 条、模式速查、不做什么、工具表）、
+  `README.md`（计数引用与 F 模式描述）
+
+### Tests
+- `scripts/test_safe_io.py` 扩充为完整回归：sniff 全分支、BOM 剥离无 U+FEFF、
+  unknown 抛错、strict/非 strict、safe_write/safe_append 无 BOM+LF+补换行、
+  write_result 往返
+
 ## [1.10.1] - 2026-08-13
 
 ### Changed

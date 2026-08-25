@@ -42,8 +42,9 @@
 - 所有 `open()` 必须显式指定编码：读取用 `open(path, 'rb')` 二进制读后显式 decode，
   或 `open(path, 'r', encoding='utf-8')`；写入一律 `open(path, 'w', encoding='utf-8')`。
 - **禁止** `errors='replace'` 静默替换损坏字符（会把中文无声变成 U+FFFD 替换字符）。
-  解码失败时应按 UTF-8 → UTF-16 → GB18030 依次尝试，全部失败则抛错提示，
-  见 `scripts/batch_edit.py` 的 `safe_read`。
+  编码无法确定时必须显式抛错提示先检查原编码：
+  统一实现见 `scripts/safe_io.py` 的 `sniff_encoding` / `decode_bytes`
+  （BOM → UTF-8 → GB18030，全部失败抛 `UnknownEncodingError`）。
 - 读取历史遗留文件（可能为 UTF-16 或 GB18030）用 `scripts/safe_io.py` 的 `safe_read`，
   它会自动检测 BOM 并做安全解码；写入统一 UTF-8 无 BOM（`safe_write` / `safe_append`）。
 
@@ -62,6 +63,20 @@
   `safe_io.safe_read()` 自动检测转码。显示乱码≠文件损坏，禁止据此盲目转码。
 - **禁止**用 PowerShell `Add-Content` 向 UTF-8 文件追加中文（默认 GBK 写入会污染），
   改用 Python `open(path, 'a', encoding='utf-8')` 或 `safe_io.safe_append`。
+
+### 文件写入编码矩阵（PS 5.1 实测）
+
+| 写入方式 | 默认编码 | 显式 `-Encoding UTF8` | 结论 |
+|----------|----------|----------------------|------|
+| `Set-Content` | GBK/ANSI；非 GBK 字符**静默写成 `?`**（emoji 实测变 `3F`） | UTF-8 **带 BOM** | ❌ 禁止用于任何非 ASCII 内容 |
+| `Add-Content` | 同上（追加即污染 UTF-8 文件）；且目标不以换行结尾时**不补换行导致粘连** | 带 BOM + 同样不补换行 | ❌ 禁止追加中文，统一用 `safe_io.safe_append()` |
+| `Out-File` / `>` 重定向 | UTF-16 LE（带 BOM） | UTF-8 带 BOM | ⚠️ 非 ASCII 时禁用默认行为 |
+| `[IO.File]::WriteAllText` / `AppendAllText` | **UTF-8 无 BOM**（.NET Core 3.0+/PS7 默认；5.1 下建议显式传编码） | — | ✅ PowerShell 内首选 |
+
+- PowerShell 中确需直接写 UTF-8 文本时统一用：
+  `[IO.File]::WriteAllText($path, $text, (New-Object System.Text.UTF8Encoding($false)))`。
+- 跨脚本、含中文/emoji 的写入一律走 Python：`safe_io.safe_write()`（UTF-8 无 BOM +
+  LF）/ `safe_append()`（自动补换行）。
 
 ### PowerShell 脚本（.ps1）
 
@@ -92,13 +107,13 @@
 
 | 工具 | 用途 |
 |------|------|
-| `scripts/safe_io.py` | 安全读写（safe_read/safe_write/safe_append/write_result），safe_print 控制台兜底 |
+| `scripts/safe_io.py` | 编码检测核心（sniff_encoding/decode_bytes）+ 安全读写（read_text/safe_read/safe_write/safe_append/write_result），safe_print 控制台兜底；unknown 显式抛 UnknownEncodingError |
 | `scripts/fix_encoding.py` | 扫描/转换文件编码为 UTF-8（scan / preview / convert / check-replacement） |
 | `scripts/detect_gbk_contamination.py` | 检测并修复 UTF-8 文件中的 GBK 污染（scan / inspect / fix） |
-| `scripts/batch_edit.py` | 一次多编辑（原子替换），safe_read 不静默损坏 |
+| `scripts/batch_edit.py` | 一次多编辑（原子替换），复用 safe_io.read_text，不静默损坏 |
 | `scripts/verify_output.py` | 验证结果写入 UTF-8 文件（替代 print），grep_check 显式解码 |
 | `scripts/audit_encoding.py` | 全项目编码审计（UTF-8/BOM/替换字符/混合换行） |
-| `scripts/init_env.ps1` | Windows 环境初始化（git quotepath、编码健康检查） |
+| `scripts/init_env.ps1` | Windows 环境初始化（git quotepath、控制台 UTF-8、编码健康检查） |
 
 ## 生成代码后的安全检查
 

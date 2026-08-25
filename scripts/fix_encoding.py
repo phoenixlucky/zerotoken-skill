@@ -35,26 +35,12 @@ from typing import List, Optional, Tuple
 
 
 # ── 安全打印（解决 #6: GBK 控制台 UnicodeEncodeError）──
-# 规范 2/15：不依赖系统默认字符集，显式把 stdio 切到 UTF-8
-# （Python 3.7+；旧版本或不可重配置流保持原样）
-try:
-    sys.stdout.reconfigure(encoding='utf-8')
-    sys.stderr.reconfigure(encoding='utf-8')
-except (AttributeError, OSError, ValueError):
-    pass
+# 统一实现见 safe_io.py（ensure_utf8_stdio / safe_print），此处仅复用。
+from safe_io import ensure_utf8_stdio, safe_print
 
-_STDOUT_ENCODING = getattr(sys.stdout, 'encoding', 'utf-8') or 'utf-8'
+sp = safe_print  # 兼容本文件既有的调用名
 
-
-def sp(*args, **kwargs) -> None:
-    """safe_print：GBK 环境不崩溃。"""
-    try:
-        print(*args, **kwargs)
-    except UnicodeEncodeError:
-        sa = [a.encode(_STDOUT_ENCODING, errors='replace').decode(
-              _STDOUT_ENCODING, errors='replace')
-              if isinstance(a, str) else str(a) for a in args]
-        print(*sa, **kwargs)
+ensure_utf8_stdio()
 
 
 def detect_encoding(raw: bytes) -> str:

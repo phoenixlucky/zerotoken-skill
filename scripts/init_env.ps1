@@ -18,6 +18,16 @@ function Write-Step {
 Write-Host "`n=== ZeroToken Windows/PowerShell 环境初始化 ===" -ForegroundColor Cyan
 Write-Host ""
 
+# 0. 控制台编码（当前会话生效；不修改系统全局设置）
+Write-Host "[0/4] 控制台编码" -ForegroundColor Cyan
+try {
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    $OutputEncoding = [System.Text.Encoding]::UTF8
+    Write-Step "Console OutputEncoding -> UTF-8" "OK"
+} catch {
+    Write-Step "控制台编码切换" "WARN" "无法切换，中文输出可能显示为乱码（显示层问题）"
+}
+
 # 1. Git quotepath（仅本地仓库，不修改全局设置）
 Write-Host "[1/4] Git 配置" -ForegroundColor Cyan
 try {

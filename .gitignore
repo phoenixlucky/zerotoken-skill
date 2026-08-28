@@ -6,5 +6,7 @@ test_*.txt
 audit_result.txt
 __pycache__/
 *.pyc
+# detect_env.py 的运行时探测缓存（会话开始时自动生成/复用）
+.zerotoken/environment.json
 # reasonix.toml 会被自动化机制写入会话中执行过的命令作为权限白名单（安全审计 Tp4 高危模式），排除跟踪
 reasonix.toml

@@ -27,6 +27,16 @@
 14. 如果无法确定外部输入的字符编码，不要猜测，应在代码中增加明确的编码检测、参数配置或异常处理。
 15. 中文字符串、中文注释、中文文件名和中文接口数据都必须能够正确读取、存储、传输和显示。
 
+## Shell 选择规则（先探测系统参数）
+
+- 任何涉及命令行执行的任务，第一步先运行 `python scripts/detect_env.py`
+  获取当前系统参数并保存到 `.zerotoken/environment.json`（7 天有效期）。
+- **Windows 系统**一律使用 PowerShell 语法（`;` 链式 / `if ($?) {}` 条件链式），
+  **禁用 bash**；PowerShell 版本以保存的探测结果为准
+  （5.1 Desktop 与 7+ Core 的编码默认行为不同）。
+- **Linux/macOS** 使用 sh/bash/zsh 等 POSIX shell，不套用 PowerShell 规避规则。
+- 中文支持能力以探测结果 `console.cjk_capable` 为准：不支持时内容验证走文件而非终端显示。
+
 ## 编码链路检查
 
 生成代码前，检查整个字符处理链路，确保每一个环节的编码一致：
@@ -113,6 +123,7 @@
 | `scripts/batch_edit.py` | 一次多编辑（原子替换），复用 safe_io.read_text，不静默损坏 |
 | `scripts/verify_output.py` | 验证结果写入 UTF-8 文件（替代 print），grep_check 显式解码 |
 | `scripts/audit_encoding.py` | 全项目编码审计（UTF-8/BOM/替换字符/混合换行） |
+| `scripts/detect_env.py` | 环境探测与持久化：OS / Shell / 控制台编码 / 中文支持 / PowerShell 版本 / Git quotepath，结果存 `.zerotoken/environment.json`（7 天有效期），决定 F/G 模式与 Shell 选择 |
 | `scripts/init_env.ps1` | Windows 环境初始化（git quotepath、控制台 UTF-8、编码健康检查） |
 
 ## 生成代码后的安全检查

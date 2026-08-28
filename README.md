@@ -41,12 +41,12 @@
 请根据上面每个 Skill 的「安装指令」完成安装。
 
 ### 方式二：从远程 Skill 仓库引用（推荐，始终获取最新版本）
-```bash
+```text
 install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 ```
 
 ### 方式三
-```bash
+```text
 安装这个技能  https://clawhub.ai/phoenixlucky/zerotoken-skill
 ```
 
@@ -59,7 +59,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 | 强化维度 | 说明 |
 |---------|------|
 | **🧠 原生 Skill 引擎** | Reasonix 的 Skill 机制原生支持本规范，载入即用，无需额外配置 |
-| **🎯 自动模式匹配** | 根据请求特征自动选择六种任务模式之一（A-F），无需手动指定 |
+| **🎯 自动模式匹配** | 根据请求特征与系统环境自动选择任务模式之一（A-G），无需手动指定 |
 | **🔧 工具链优化** | 按模式限制工具调用范围（简单问答不调工具、多文件任务分批加载） |
 | **📄 输出规范** | 结论先行、不复述、要点+位置 等输出模板内嵌为默认行为 |
 | **💰 Token 预算策略** | 按模式自动分配上下文深度：简单问答极低预算，重大重构允许高消耗 |
@@ -112,7 +112,7 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 
 ## 📋 能力一览
 
-根据你的请求特征，ZeroToken Skill 自动匹配六种任务模式。每种模式都有专属的**工具链**、**输出格式**和 **token 预算策略**：
+根据你的请求特征与系统环境，ZeroToken Skill 自动匹配七种任务模式。每种模式都有专属的**工具链**、**输出格式**和 **token 预算策略**：
 
 | 模式 | 一句话概括 | Token 成本 |
 |------|-----------|:----------:|
@@ -121,7 +121,8 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 | **C. 📦 多文件任务** | 短计划 → 分批加载 → 按步推进 | 🟡 中 |
 | **D. 📚 大资料总结** | 要点 + 证据位置，不逐段复述 | 🟠 中高 |
 | **E. 🏗️ 重大架构调整** | 诊断根因 → 确认方案 → 增量迁移 | 🔴 高（但可控） |
-| **F. 🖥️ Windows/PowerShell 环境适配** | 15 条陷阱规则 + 脚本工具，解决中文+Windows 工作流痛点 | 🟢 低 |
+| **F. 🖥️ Windows/PowerShell 环境适配** | 系统参数自动识别保存 + 15 条陷阱规则 + 脚本工具，Windows 系统自动启用 | 🟢 低 |
+| **G. 🐧 POSIX 标准工作流** | Linux/macOS 自动启用：sh/bash 工具链，不套用 PowerShell 规则 | 🔵 极低 |
 
 ---
 
@@ -242,14 +243,17 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 
 ---
 
-### F. 🖥️ Windows/PowerShell 环境适配 — "当前是 Windows/PowerShell + 中文环境"
+### F. 🖥️ Windows/PowerShell 环境适配 — "detect_env.py 识别到 Windows 系统"
 
-> **⚠️ 此模式为可选环境适配，非默认行为。** 仅当工作在 Windows PowerShell 环境且任务涉及中文时才启用。macOS / Linux 或纯英文工作流不需要此模式。
+> **自动启用：** `python scripts/detect_env.py` 探测到 Windows 系统即进入此模式，
+> 不要求任务涉及中文。系统参数（OS / Shell / 控制台编码 / 中文支持 / PowerShell 版本）
+> 探测后保存到 `.zerotoken/environment.json`（7 天有效期），后续命令选择以保存的参数为准。
 
-**适用场景：** Windows PowerShell + 中文环境下的文件读写、Git 操作、脚本执行、编码处理。
+**适用场景：** Windows 系统下的命令执行、文件读写、Git 操作、脚本执行、编码处理。
 
 **典型信号：**
 ```
+detect_env.py 报告 os.name == "windows"
 "这个中文文件打开是乱码"
 "git diff 显示 \\xxx 而不是中文文件名"
 "PowerShell 里中文报语法错误"
@@ -258,15 +262,30 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 
 **行为表现：**
 ```
-🏷️ 识别 → "Windows/PowerShell + 中文环境，启用 F 模式"
-   📋 检查 → 15 条已知陷阱匹配当前症状
-      🛠️ 解决 → 对应脚本工具或安全模板处理
+🏷️ 识别 → detect_env.py 探测 Windows 系统，自动启用 F 模式
+   📋 检查 → 系统参数已保存；15 条已知陷阱匹配当前症状
+      🛠️ 解决 → PowerShell 命令 + 对应脚本工具或安全模板处理
          📝 输出 → 修复结果 + 验证确认
 ```
 
-**不做什么：** ❌ 不在 bash 命令中直接嵌入含 `+` 的中文 ❌ 不使用 `Add-Content` 追加中文 ❌ 不用 PS 5.1 的 `Set-Content` / `Out-File` 默认编码写非 ASCII 内容 ❌ 不直接在 PowerShell 中 `print()` 中文 ❌ 不忽略编码问题强行操作
+**不做什么：** ❌ 不在 Windows 上使用 bash（一律 PowerShell）❌ 不在 bash 命令中直接嵌入含 `+` 的中文 ❌ 不使用 `Add-Content` 追加中文 ❌ 不用 PS 5.1 的 `Set-Content` / `Out-File` 默认编码写非 ASCII 内容 ❌ 不直接在 PowerShell 中 `print()` 中文 ❌ 不忽略编码问题强行操作
 
-**内置工具包（`scripts/`）：** `safe_io.py`（编码自动检测 + 安全读写/追加，unknown 显式抛错）、`detect_gbk_contamination.py`（检测修复 GBK 污染）、`batch_edit.py`（批量编辑）、`fix_encoding.py`（编码转换）、`verify_output.py`（验证输出）、`init_env.ps1`（环境初始化）
+**内置工具包（`scripts/`）：** `detect_env.py`(环境识别+系统参数保存)、`safe_io.py`（编码自动检测 + 安全读写/追加，unknown 显式抛错）、`detect_gbk_contamination.py`（检测修复 GBK 污染）、`batch_edit.py`（批量编辑）、`fix_encoding.py`（编码转换）、`verify_output.py`（验证输出）、`init_env.ps1`（环境初始化）
+
+---
+
+### G. 🐧 POSIX 标准工作流 — "detect_env.py 识别到 Linux/macOS"
+
+**适用场景：** Linux / macOS 系统下的常规任务。
+
+**行为表现：**
+```
+🏷️ 识别 → detect_env.py 探测 POSIX 系统，自动启用 G 模式
+   🐚 Shell → sh/bash（macOS 默认 zsh），禁用 PowerShell 语法
+      ⚙️ 执行 → 标准 ZeroToken 工作流，文件编码仍统一 UTF-8
+```
+
+**不做什么：** ❌ 不套用 F 模式的 PowerShell 规避规则（GBK 污染、Add-Content 等与 POSIX 无关）
 
 ---
 
@@ -336,9 +355,10 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 - 📝 **精准提示词模板** — 目标 → 输入 → 约束 → 输出 → 预算
 - 🔍 **搜索资料规范** — Chrome MCP 优先，web_fetch 备选
 - 📜 **Unicode 安全编码规范** — 全项目编码硬性规定，见 `docs/unicode-encoding-spec.md`
-- 🔄 **六种任务模式详解 (A-F)** — 每种模式的完整行为规范
-- 🖥️ **F. Windows/PowerShell 环境适配** — 15 条已知陷阱与解决方案
-- 🛠️ **scripts/ 工具集** — `safe_io.py`, `detect_gbk_contamination.py`, `batch_edit.py`, `fix_encoding.py`, `verify_output.py`, `audit_encoding.py`, `init_env.ps1`
+- 🔄 **七种任务模式详解 (A-G)** — 每种模式的完整行为规范
+- 🖥️ **F. Windows/PowerShell 环境适配** — 15 条已知陷阱与解决方案，Windows 系统自动启用
+- 🐧 **G. POSIX 标准工作流** — Linux/macOS 自动启用，sh/bash 工具链
+- 🛠️ **scripts/ 工具集** — `detect_env.py`, `safe_io.py`, `detect_gbk_contamination.py`, `batch_edit.py`, `fix_encoding.py`, `verify_output.py`, `audit_encoding.py`, `init_env.ps1`
 - ⚡ **ZeroToken 强化模式 & 退出条件**
 - 🛡️ **质量底线** — 压缩不降质的硬性要求
 

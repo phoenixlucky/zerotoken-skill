@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.12.0] - 2026-08-25
+
+### Added
+- **环境识别与系统参数持久化**：新增 `scripts/detect_env.py` — 任何涉及命令行执行的
+  任务开始时先探测当前系统参数并保存到 `.zerotoken/environment.json`（7 天有效期）：
+  OS 名称/版本、推荐 Shell（Windows→PowerShell，Linux→bash，macOS→zsh）、
+  控制台编码（stdout encoding + Windows ANSI/OEM 代码页）、
+  **中文字符支持判定**（`console.cjk_capable`）、PowerShell 可用性/版本/发行版
+  （5.1 Desktop 与 7+ Core 编码行为不同）、Git `core.quotepath` 现状
+- 新增 G 模式（POSIX 标准工作流）：detect_env.py 识别到 Linux/macOS 时自动启用，
+  使用 sh/bash/zsh 工具链，明确不套用 F 模式的 PowerShell 规避规则
+- 核心原则新增 #8「先识别环境，再选 Shell」：命令行任务第一步先获取并保存系统参数，
+  之后所有命令按已保存参数选择 Shell——**Windows 一律 PowerShell，禁用 bash**
+- `init_env.ps1` 新增 [0.5] 系统参数识别段：输出 PowerShell 版本/发行版、ANSI 代码页、
+  中文字符支持判定，并联动 `detect_env.py` 输出完整探测报告
+- `docs/unicode-encoding-spec.md` 新增「Shell 选择规则」章节：先探测系统参数再选 Shell，
+  中文支持能力以 `console.cjk_capable` 为准
+- 回归测试 `scripts/test_detect_env.py`：recommended_shell 分支、CJK 判定矩阵、
+  结构完整性、持久化 round-trip / 过期拒绝 / 损坏拒绝
+
+### Changed
+- **F 模式触发条件放宽**：由「Windows/PowerShell + 中文文本且用户确认」改为
+  「detect_env.py 识别到 Windows 系统即自动启用」，中文支持内置于环境识别结果，
+  不再要求任务涉及中文
+- SKILL.md / README.md：F 模式描述同步改写为自动识别；模式计数更新为七种（A-G）；
+  清除全部 ```` ```bash ```` 代码块标记（Windows 环境下不再展示 bash 用法）
+- 工具清单补齐：SKILL.md 脚本表与 README.md 工具集列表均加入 `detect_env.py`
+
+### Fixed
+- `detect_env.py` 时间戳格式与过期解析不一致的 bug（`detected_at` 统一为
+  紧凑格式供 `is_fresh()` 解析，另附人类可读的 `detected_at_iso`）
+- `init_env.ps1` 变量 `$psEdition` 与 PS 只读自动变量 `$PSEdition` 冲突
+  （PS 变量名大小写不敏感），更名为 `$psEditionName`
+
 ## [1.11.0] - 2026-08-14
 
 ### Added

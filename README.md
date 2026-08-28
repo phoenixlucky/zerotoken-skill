@@ -32,13 +32,14 @@
 ## 🔌 平台集成指南
 
 ### 方式一
-
+```text
 请依次阅读并安装以下 Skill。
 
 - **ZeroToken Skill** — phoenixlucky，Token 高效约束：最少 token 和精准提示完成任务，减少无效输出
 - 地址：https://github.com/phoenixlucky/zerotoken-skill
 
 请根据上面每个 Skill 的「安装指令」完成安装。
+```
 
 ### 方式二：从远程 Skill 仓库引用（推荐，始终获取最新版本）
 ```text
@@ -382,12 +383,6 @@ detect_env.py 报告 os.name == "windows"
 | 5 | **不复述** | 不重复用户已说的内容 |
 | 6 | **plan 只写顶层步骤** | 避免 bullet 子步骤被 todo 系统注册为独立待办项 |
 | 7 | **设置停止条件** | 已定位目标、必要调用方和验证方式后即停止搜索，不重复读取未变化的文件 |
-
----
-
-## 🏷️ 标签
-
-`zerotoken` `token-efficient` `prompt-engineering` `context-optimization` `agent-discipline` `ai-workflow` `token-budget` `concise-output`
 
 ---
 

@@ -384,6 +384,7 @@ with open(path, 'a', encoding='utf-8', newline='\n') as f:
 | C2 | **`clawhub publish` 相对路径解析错误** | `publish .` 报 `Error: SKILL.md required` | CLI 默认 `--dir skills`（相对 workdir），相对路径找不到根目录 SKILL.md；✅ 传**绝对路径**：`clawhub publish D:\...\zerotoken-skill` |
 | C3 | **发布命令长时零输出** | 前台发布跑 2 分钟无输出被超时终止，ClawHub 无变化 | 上传 registry 需 5-6 分钟且**全程零输出**（易误判卡死）；✅ 用后台运行（`run_in_background`）+ 轮询等待，勿在前台等超时 |
 | C4 | **安全扫描异步** | 发布提交成功（`Update submitted ... pending security scans before it becomes public`）但 registry/页面仍是旧版本号 | 平台规则：扫描通过才公开；✅ 用 `clawhub inspect phoenixlucky/zerotoken-skill --json` 或页面 `og:image` 复查，看到新版本号即已公开 |
+| C6 | **带 source 参数触发上传 ticket 失效** | `publish ... --source-repo ... --source-commit <sha>` 报 `Skill upload ticket is missing, used, or expired`（连续重试+等冷却无效） | 实测（v1.13.2）：**去掉 `--source-repo` / `--source-commit` 重试即成功**；source 元数据可在发布后通过页面/GitHub 关联，不影响打包内容 |
 | C5 | **发布前工作区有未提交改动** | 工作区脏时发布，未提交改动**已随包上传 ClawHub** 但 GitHub 缺失，两端分叉 | ✅ 发布前先 `git status` 确认干净（或先提交）再发布；发布后复查 `git status` |
 
 **推荐发布时序（每次发布固定流程）：**

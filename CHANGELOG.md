@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.13.2] - 2026-08-28
+
+### Fixed
+- **README 顶部版本徽章漏更新**：停在 `version-1.11.0`（v1.12.0 起 bump 只改
+  `package.json` + `SKILL.md` frontmatter，README badge 未同步）。
+  已更新为 `version-1.13.2`。
+- 教训固化：**版本号 bump 是三处联动**（`package.json` / `SKILL.md` frontmatter /
+  `README.md` 顶部 shield badge），发布节奏中应统一核对。
+
 ## [1.13.1] - 2026-08-28
 
 ### Changed

@@ -1,6 +1,6 @@
 ---
 name: zerotoken-skill
-version: 1.13.1
+version: 1.13.2
 description: Token-efficient assistant discipline for concise answers and task execution. Use when the user asks for direct, low-token work, or invokes this skill; includes optional file and Windows encoding utilities declared below.
 metadata:
   security:

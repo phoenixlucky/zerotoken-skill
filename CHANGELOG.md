@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.13.0] - 2026-08-28
+
+### Added
+- **ClawHub 发布规范**（source: v1.12.0 实测发布过程）：
+  - SKILL.md 新增「📤 ClawHub 发布」章节：关键事实 + 发布陷阱表（C1-C5）+
+    固定发布时序
+  - **C1**：PowerShell `curl` 是 `Invoke-WebRequest` 别名（参数不兼容），网络探测一律用 `curl.exe`
+  - **C2**：`clawhub publish` 相对路径解析错误（默认 `--dir skills` 找不到根目录 SKILL.md），
+    必须传绝对路径，且先 `--dry-run` 预览
+  - **C3**：发布命令上传 registry 需 5-6 分钟且全程零输出，前台运行会被超时终止，
+    必须后台运行 + 轮询等待
+  - **C4**：ClawHub 安全扫描异步——提交成功（`pending security scans`）≠ 公开，
+    registry 仍是旧版本号，用 `clawhub inspect` 复查
+  - **C5**：发布前工作区必须干净（未提交改动会随包上传 ClawHub 但 GitHub 缺失，
+    两端分叉），发布前后各查一次 `git status`
+  - 关键事实澄清：ClawHub 不是 Git 端点（`git fetch/push clawhub` 404），
+    发布必须走 clawhub CLI（pnpm 全局安装于 `%LOCALAPPDATA%\pnpm\clawhub.CMD`，用全路径调用）
+- README.md「📖 核心文档」索引新增 ClawHub 发布条目
+
 ## [1.12.0] - 2026-08-25
 
 ### Added

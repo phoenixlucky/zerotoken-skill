@@ -359,6 +359,7 @@ detect_env.py 报告 os.name == "windows"
 - 🔄 **七种任务模式详解 (A-G)** — 每种模式的完整行为规范
 - 🖥️ **F. Windows/PowerShell 环境适配** — 15 条已知陷阱与解决方案，Windows 系统自动启用
 - 🐧 **G. POSIX 标准工作流** — Linux/macOS 自动启用，sh/bash 工具链
+- 📤 **ClawHub 发布** — C1-C5 发布陷阱 + 固定发布时序（CLI 非 git push、后台运行、异步扫描）
 - 🛠️ **scripts/ 工具集** — `detect_env.py`, `safe_io.py`, `detect_gbk_contamination.py`, `batch_edit.py`, `fix_encoding.py`, `verify_output.py`, `audit_encoding.py`, `init_env.ps1`
 - ⚡ **ZeroToken 强化模式 & 退出条件**
 - 🛡️ **质量底线** — 压缩不降质的硬性要求

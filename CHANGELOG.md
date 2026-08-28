@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.13.1] - 2026-08-28
+
+### Changed
+- **README.md 平台集成指南更新**（补发到 ClawHub 发布包）：
+  - 方式一标注「（推荐，AI助手安装）」
+  - 方式二、方式三补充 GitHub 源安装命令
+    （`install-source --source https://github.com/phoenixlucky/zerotoken-skill` /
+    「安装这个技能 https://github.com/phoenixlucky/zerotoken-skill」），
+    与 ClawHub 源并列
+- 教训固化：**发布包内的 README 以发布时工作区文件为准**——GitHub 提交 ≠
+  ClawHub 包同步，README 等文档后续改动需新发版本（docs-only 可 bump patch）
+
 ## [1.13.0] - 2026-08-28
 
 ### Added

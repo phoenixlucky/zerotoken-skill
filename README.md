@@ -31,7 +31,7 @@
 
 ## 🔌 平台集成指南
 
-### 方式一
+### 方式一（推荐，AI助手安装）
 ```text
 请依次阅读并安装以下 Skill。
 
@@ -41,12 +41,25 @@
 请根据上面每个 Skill 的「安装指令」完成安装。
 ```
 
-### 方式二：从远程 Skill 仓库引用（推荐，始终获取最新版本）
+### 方式二：从远程 Skill 仓库引用
+
+```
+install-source --source https://github.com/phoenixlucky/zerotoken-skill
+```
+
+或者
+
 ```text
 install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 ```
 
-### 方式三
+### 方式三 （AI助手安装）
+```text
+安装这个技能  https://github.com/phoenixlucky/zerotoken-skill
+```
+
+或者
+
 ```text
 安装这个技能  https://clawhub.ai/phoenixlucky/zerotoken-skill
 ```

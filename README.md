@@ -8,7 +8,7 @@
 >
 > 💬 **用不完，根本用不完，妈妈再也不用担心我缺 token 了。**
 
-[![Version](https://img.shields.io/badge/version-1.13.2-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.14.0-blue.svg)]()
 [![License](https://img.shields.io/badge/license-GPL--3.0-green.svg)](LICENSE)
 [![Author](https://img.shields.io/badge/author-phoenixlucky-orange.svg)]()
 </div>
@@ -88,6 +88,17 @@ install-source --source https://clawhub.ai/phoenixlucky/zerotoken-skill
 | **🎣 工具调用策略** | 先搜索定位再局部读取，避免扫描全项目；能 1 步不用 2 步 |
 | **✂️ 输出精简** | 只返回结果+验证+注意，不添加无关分析和总结评语 |
 | **🧮 上下文预算意识** | 先判断请求类型再决定投入多少上下文，不默认全量读取 |
+
+---
+
+### 🦾 Cline
+
+| 强化维度 | 说明 |
+|---------|------|
+| **🎯 任务模式匹配** | A-G 决策表直接约束每轮的读取深度与工具范围 |
+| **⏹️ 停止条件** | 定位到目标与验证方式即停，不反复读同一个文件 |
+| **📄 结论先行输出** | 「已完成 / 改动 / 验证 / 注意」四段式，省去总结性废话 |
+| **🔐 编码安全** | Windows 下的写入一律走 Python，规避 GBK 污染与 emoji 丢字 |
 
 ---
 
@@ -284,7 +295,11 @@ detect_env.py 报告 os.name == "windows"
 
 **不做什么：** ❌ 不在 Windows 上使用 bash（一律 PowerShell）❌ 不在 bash 命令中直接嵌入含 `+` 的中文 ❌ 不使用 `Add-Content` 追加中文 ❌ 不用 PS 5.1 的 `Set-Content` / `Out-File` 默认编码写非 ASCII 内容 ❌ 不直接在 PowerShell 中 `print()` 中文 ❌ 不忽略编码问题强行操作
 
-**内置工具包（`scripts/`）：** `detect_env.py`(环境识别+系统参数保存)、`safe_io.py`（编码自动检测 + 安全读写/追加，unknown 显式抛错）、`detect_gbk_contamination.py`（检测修复 GBK 污染）、`batch_edit.py`（批量编辑）、`fix_encoding.py`（编码转换）、`verify_output.py`（验证输出）、`init_env.ps1`（环境初始化）
+**统一入口：** `python scripts/zt.py help`（`zt.py check` 一键跑完全部校验）；下列脚本也可独立调用。
+
+**内置工具包（`scripts/`）：** `detect_env.py`（环境识别+系统参数保存）、`safe_io.py`（编码自动检测 + 安全读写/追加，unknown 显式抛错）、`detect_gbk_contamination.py`（检测修复 GBK 污染）、`batch_edit.py`（批量编辑）、`fix_encoding.py`（编码转换）、`verify_output.py`（验证输出）、`audit_encoding.py`（编码合规审计）、`init_env.ps1`（环境初始化）
+
+> 📖 **15 条陷阱的完整表格、脚本用法与安全读写模板见 [`references/windows-powershell.md`](references/windows-powershell.md)**（按需读取，避免常驻占用上下文）。
 
 ---
 
@@ -319,12 +334,12 @@ detect_env.py 报告 os.name == "windows"
 
 | 优先级 | 方式 | 条件 |
 |--------|------|------|
-| 🥇 **Chrome MCP** | 真实浏览器搜索（不限百度） | `mcp_call.py` 存在且服务在线 |
-| 🥈 **web_fetch** | 备选 | 仅当 Chrome MCP 不可用 |
+| 🥇 **本地浏览器 MCP 桥** | 真实浏览器搜索（搜索引擎不限百度） | 本地存在 MCP 桥脚本且服务在线 |
+| 🥈 **抓取工具**（如 `web_fetch`） | 备选 | 仅当浏览器桥不可用 |
 
-> Chrome MCP 真实浏览器可通杀微博/知乎/小红书等反爬严格的平台；若 Chrome MCP 不可用，允许使用当前网络可用的其他搜索方式。
+> 真实浏览器可通杀微博/知乎/小红书等反爬严格的平台；若浏览器桥不可用，允许使用当前网络可用的其他搜索方式。
 
-完整规则（禁用行为、Windows 调用注意、搜索命令示例）见 [SKILL.md「🔍 搜索资料规范」](SKILL.md#🔍-搜索资料规范)。
+完整规则（入口探测顺序、禁用行为、Windows 调用注意）见 [`references/search.md`](references/search.md)。
 
 ---
 
@@ -359,23 +374,34 @@ detect_env.py 报告 os.name == "windows"
 
 ---
 
-## 📖 核心文档
+## 📖 文档地图
 
-所有详细规范定义在 **[`SKILL.md`](SKILL.md)**，配套脚本工具在 **`scripts/`** 目录：
+**文档分层：** `SKILL.md` 是常驻核心（决策表 + 原则 + 输出格式，≤12KB）；细节按需读取
+`references/` 下的参考文档——这样加载时不为当前任务用不到的内容付 token。
+
+**`SKILL.md`（常驻核心）**
 
 - 📐 **快速决策表** — 按请求类型匹配模式与工具链
-- 🧭 **核心原则** — 先分类再预算、压缩提示词、渐进读取、先给结果、不复述、设置停止条件
-- ⚔️ **AI 编程总纲（尉缭子十原则）** — 权限边界、单一指令、责任明确、执行一致，附 System Prompt 总纲
+- 🧭 **核心原则（8 条）** — 先分类再预算、压缩提示词、渐进读取、先给结果、不复述、plan 只写顶层步骤、设置停止条件、先识别环境再选 Shell
+- ⚔️ **AI 编程总纲（尉缭子十原则）** — 权限边界、单一指令、责任明确、执行一致
 - 📝 **精准提示词模板** — 目标 → 输入 → 约束 → 输出 → 预算
-- 🔍 **搜索资料规范** — Chrome MCP 优先，web_fetch 备选
-- 📜 **Unicode 安全编码规范** — 全项目编码硬性规定，见 `docs/unicode-encoding-spec.md`
-- 🔄 **七种任务模式详解 (A-G)** — 每种模式的完整行为规范
-- 🖥️ **F. Windows/PowerShell 环境适配** — 15 条已知陷阱与解决方案，Windows 系统自动启用
-- 🐧 **G. POSIX 标准工作流** — Linux/macOS 自动启用，sh/bash 工具链
-- 📤 **ClawHub 发布** — C1-C5 发布陷阱 + 固定发布时序（CLI 非 git push、后台运行、异步扫描）
-- 🛠️ **scripts/ 工具集** — `detect_env.py`, `safe_io.py`, `detect_gbk_contamination.py`, `batch_edit.py`, `fix_encoding.py`, `verify_output.py`, `audit_encoding.py`, `init_env.ps1`
-- ⚡ **ZeroToken 强化模式 & 退出条件**
-- 🛡️ **质量底线** — 压缩不降质的硬性要求
+- 🔄 **任务模式要点 (A-G)** — 每种模式的首轮行为
+- ⚡ **ZeroToken 强化模式 & 退出条件** / 🛡️ **质量底线**
+
+**`references/`（按需读取）**
+
+| 文档 | 内容 |
+|---|---|
+| [`windows-powershell.md`](references/windows-powershell.md) | F 模式：15 条已知陷阱 + 脚本工具表 + 推荐工作流 + 安全读写模板 |
+| [`refactor-playbook.md`](references/refactor-playbook.md) | E 模式：根因诊断 → 影响面 → 方案确认 → 增量迁移 → 收尾 |
+| [`search.md`](references/search.md) | 搜索资料规范：入口探测顺序、禁用行为、Windows 调用注意 |
+| [`tool-mapping.md`](references/tool-mapping.md) | 工具名跨宿主映射、宿主 verification 循环、plan/todo 注册行为 |
+| [`publishing-clawhub.md`](references/publishing-clawhub.md) | 维护者手册：C1-C6 发布陷阱 + 固定发布时序 |
+
+**其他目录**
+
+- 📜 **`docs/unicode-encoding-spec.md`** — Unicode 安全编码规范 15 条 + 项目执行细则
+- 🛠️ **`scripts/` 工具集** — `zt.py`（统一入口：`zt.py help` / `zt.py check`）, `detect_env.py`, `safe_io.py`, `detect_gbk_contamination.py`, `batch_edit.py`, `fix_encoding.py`, `verify_output.py`, `audit_encoding.py`, `audit_skill.py`, `bump_version.py`, `init_env.ps1`
 
 ---
 
@@ -397,6 +423,7 @@ detect_env.py 报告 os.name == "windows"
 | 5 | **不复述** | 不重复用户已说的内容 |
 | 6 | **plan 只写顶层步骤** | 避免 bullet 子步骤被 todo 系统注册为独立待办项 |
 | 7 | **设置停止条件** | 已定位目标、必要调用方和验证方式后即停止搜索，不重复读取未变化的文件 |
+| 8 | **先识别环境，再选 Shell** | 命令行任务先跑 `detect_env.py` 保存系统参数，再按平台选 PowerShell / POSIX shell |
 
 ---
 

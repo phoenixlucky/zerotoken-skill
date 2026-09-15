@@ -1,11 +1,15 @@
 {
   "name": "zerotoken-skill",
-  "version": "1.13.2",
+  "version": "1.14.0",
   "files": [
     "SKILL.md",
     "README.md",
     "CHANGELOG.md",
-    "agents/"
+    "references/",
+    "scripts/",
+    "docs/",
+    "agents/",
+    "assets/"
   ],
   "description": "Default token-efficient assistant discipline for solving tasks with minimal precise prompts, concise context, and short actionable outputs.",
   "author": "phoenixlucky",

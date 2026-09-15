@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.14.0] - 2026-09-15
+
+### Added
+- `scripts/bump_version.py` — 版本号三处联动的校验与写入（`package.json` /
+  SKILL.md frontmatter / README badge）。`--check` 供 CI 与发布前使用，
+  终结 v1.13.2 记录的「三处联动只能人工核对」漏改问题。
+- `scripts/audit_skill.py` — 文档一致性审计（8 项）：版本三处一致、SKILL.md 体积预算、
+  Markdown 相对链接存在性、核心原则条数（SKILL.md vs README）、`scripts/*.py` 引用存在性、
+  F 模式陷阱条数与文案声明一致、核心文档不得出现宿主专属工具名、
+  非规范 CJK 字符（康熙部首 / 兼容表意文字）。
+- `.github/workflows/ci.yml` — 最小 CI：两个回归测试 + 编码审计 + 文档一致性 + 版本联动。
+- `AGENTS.md` 补项目结构、校验命令、发布指针（原先只有编码规范与一条安装笔记）。
+
+### Fixed
+- SKILL.md 中的异体字：用 Kangxi 部首 U+2F0C 冒充「文」，视觉相同但码位不同，
+  搜索与精确匹配会静默失败。同类问题现由 `audit_skill.py` 长期兜住。
+- README 核心原则表长期只有 7 条：v1.12.0 新增的 #8「先识别环境，再选 Shell」未同步，
+  现由 `audit_skill.py` 强制两边条数一致。
+- **`bump_version.py` 写入路径崩溃**：`apply_version()` 依赖正则的第 3 组拼接文本，
+  而 SKILL.md 的锚点只有 2 组 → `python scripts/bump_version.py <版本号>` 抛
+  `IndexError: no such group`，且此时 `package.json` 已被改写、另外两处未改（半写入状态）。
+  改为基于第 2 组的 `match.span()` 替换，对组数变化免疫；补 `test_bump_version.py` 兜住。
+  （该路径自引入起只被 `--check` 覆盖过，写入分支从未被测 —— 教训：CLI 的写入分支必须有测试。）
+- `audit_encoding.py` / `bump_version.py` 统一返回退出码：发现问题返回 1
+  （此前 `audit_encoding.py` 恒返回 0，CI 会把编码违规当成功放行）。
+
+### Changed
+- 文档统一以 zt.py 为主入口：`README.md`（F 模式段 + 文档地图）、
+  `references/windows-powershell.md`（脚本工具段）、`AGENTS.md`（校验命令）、
+  `references/publishing-clawhub.md`（发布时序 7 步 → 4 步，校验收敛为一条 `zt.py check`）、
+  `.github/workflows/ci.yml`（5 个 step → 1 个）。
+- `bump_version.py` 的 `check()` 重构为 `gather()`（返回结构化结果，CLI 与 JSON 共用）。
+- `audit_encoding.py` 的 `--out` 默认值改为 `None`（默认行为仍是写 `audit_result.txt`；
+  JSON 模式不落盘，除非显式 `--out`），避免 CI / `zt.py check` 污染工作区。
+- `SKILL.md` description 补中文触发词（「省 token / 简洁点 / 直接给结果 / 少废话 / 别解释」），
+  提高宿主自动加载命中率；新增一行工具入口指引（体积仍在 12KB 预算内）。
+
+### Tests
+- 新增负向探针验证：对仓库副本注入 8 类缺陷（版本漂移、坏链接、缺脚本引用、
+  原则条数不一致、陷阱条数漂移、宿主专属工具名、异体字），`audit_skill.py` 全部命中。
+
 ## [1.13.2] - 2026-08-28
 
 ### Fixed

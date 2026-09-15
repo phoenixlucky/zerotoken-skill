@@ -13,6 +13,7 @@ audit_encoding.py — 全项目编码合规审计（对照 Unicode 安全编码�
 """
 
 import argparse
+import json
 import os
 from typing import Dict, List, Tuple
 
@@ -77,10 +78,14 @@ def collect_files(root: str) -> List[str]:
     return sorted(files)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description='编码合规审计（Unicode 安全编码规范对照）')
     parser.add_argument('--root', default='.')
-    parser.add_argument('--out', default='audit_result.txt')
+    parser.add_argument('--out', default=None,
+                        help='报告输出文件（默认 audit_result.txt；--json 时写 JSON）')
+    parser.add_argument('--json', action='store_true',
+                        help='输出 JSON（供 AI / CI 解析）')
     args = parser.parse_args()
 
     lines: List[str] = []
@@ -124,6 +129,23 @@ def main() -> None:
         if crlf > 0 and lf > 0:
             problems.append(f'[混合换行 LF={lf} CRLF={crlf}] {rel}')
 
+    if args.json:
+        payload = json.dumps({
+            'ok': not problems,
+            'root': os.path.abspath(args.root),
+            'text_files': sum(stats.values()),
+            'skipped_binary': binary_count,
+            'encodings': stats,
+            'problems': problems,
+        }, ensure_ascii=False, indent=2)
+        if args.out:
+            with open(args.out, 'w', encoding='utf-8', newline='\n') as f:
+                f.write(payload + '\n')
+            print(f'json written to: {os.path.abspath(args.out)}')
+        else:
+            print(payload)
+        return 0 if not problems else 1
+
     lines.append(f'文本文件: {sum(stats.values())}  二进制/跳过: {binary_count}')
     for enc, n in sorted(stats.items()):
         lines.append(f'  {enc:<12} {n} 个文件')
@@ -137,14 +159,14 @@ def main() -> None:
         lines.append('未发现问题。所有文本文件均为 UTF-8，无替换字符，无混合换行。')
 
     content = '\n'.join(lines) + '\n'
-    out_path = args.out
+    out_path = args.out or 'audit_result.txt'
     with open(out_path, 'w', encoding='utf-8', newline='\n') as f:
         f.write(content)
 
     # 用 write_result 同款方式提示绝对路径（避免终端打印中文）
-    abs_path = os.path.abspath(out_path)
-    print(f'audit written to: {abs_path}')
+    print(f'audit written to: {os.path.abspath(out_path)}')
+    return 0 if not problems else 1
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

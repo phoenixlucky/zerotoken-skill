@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.17.0] - 2026-09-20
+
+### Security
+- `references/search.md` 移除对工作区/用户目录桥接脚本（`mcp_call.py`、`mcp-bridge.js`）
+  的通配探测与执行：检索入口只允许使用宿主已注册的工具；本地桥仅在用户显式给出绝对路径
+  并确认后才可调用。修复 ClawHub 安全审计 T07（Tool Hijacking and Spoofing ·
+  Untrusted Local Browser Bridge Discovery and Execution），并补充第三方数据外发提示
+  （原「Missing User Warnings」项）。
+- `scripts/audit_encoding.py` 从文本扩展名清单移除 `.env`，避免凭据访问类静态扫描误报。
+
+### Changed
+- `SKILL.md` 描述收窄自动触发条件：仅在用户明确要求省 token / 直接输出或点名调用本技能
+  时启用，移除易误触发的宽泛短语；并注明文档语言仅为默认、语言可自选。
+- `scripts/fix_encoding.py`：convert 未加 `--backup` 时显式告警（原地覆盖不可回滚），
+  消除文档与行为的歧义。
+
 ## [1.16.0] - 2026-09-20
 
 ### Added

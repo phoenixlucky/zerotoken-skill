@@ -1,7 +1,7 @@
 ---
 name: zerotoken-skill
-version: 1.16.0
-description: Token-efficient assistant discipline for concise, direct answers and minimal-context task execution. Use when the user asks for low-token / direct output or says「省 token / 简洁点 / 直接给结果 / 少废话 / 别解释」, or invokes this skill; includes optional file-encoding and Windows PowerShell utilities (single entry: `python scripts/zt.py help`).
+version: 1.17.0
+description: Token-efficient assistant discipline for concise, direct answers and minimal-context task execution. Use only when the user explicitly requests low-token / direct output (e.g. says「省 token」「直接给结果」) or invokes this skill by name; includes optional file-encoding and Windows PowerShell utilities (single entry: `python scripts/zt.py help`).
 metadata:
   security:
     capabilities:
@@ -19,7 +19,8 @@ metadata:
 
 # ZeroToken Skill
 
-> **语言**：回答语言跟随用户交互语言——用中文问就用中文答，用英文问就用英文答。
+> **语言**：回答语言跟随用户交互语言——用中文问就用中文答，用英文问就用英文答
+> （语言可自选；本文件正文用 zh-CN 只是默认，不强制）。
 > 平台环境由 `python scripts/detect_env.py` 自动识别，不需要用户声明语言或平台。
 > *(Answer in the user's language; environment detection is automatic.)*
 

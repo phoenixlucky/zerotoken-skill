@@ -27,7 +27,7 @@ TEXT_EXTS = {
     '.md', '.txt', '.py', '.yaml', '.yml', '.json', '.toml',
     '.cfg', '.ini', '.conf', '.css', '.html', '.js', '.ts',
     '.xml', '.sh', '.ps1', '.bat', '.cmd', '.csv', '.log',
-    '.gitignore', '.gitattributes', '.env', '.editorconfig',
+    '.gitignore', '.gitattributes', '.editorconfig',
 }
 
 SKIP_DIRS = {'.git', '.codegraph', '.reasonix', '__pycache__', 'node_modules', '.venv', 'venv'}

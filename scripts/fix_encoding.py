@@ -21,7 +21,7 @@ fix_encoding.py — 批量转换文件编码为 UTF-8
     python scripts/fix_encoding.py check-replacement <directory>
 
 安全保证：
-    - convert 模式需要 --backup 参数才会创建 .bak 备份
+    - convert 模式默认不写备份；加 --backup 才创建 .bak（无备份时为原地覆盖，不可回滚）
     - 只修改匹配 --ext 的文件
     - preview 模式不做任何写入
 """
@@ -180,6 +180,9 @@ def convert_to_utf8(directory: str, extensions: Optional[List[str]] = None,
     if not files:
         sp(f"在 {directory} 中未找到匹配的文件")
         return
+
+    if not backup:
+        sp("⚠️ 未启用 --backup：将原地覆盖文件且无法回滚，建议先 preview 或加 --backup。")
 
     converted = 0
     skipped = 0

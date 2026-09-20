@@ -8,7 +8,7 @@
 >
 > 💬 **用不完，根本用不完，妈妈再也不用担心我缺 token 了。**
 
-[![Version](https://img.shields.io/badge/version-1.16.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.17.0-blue.svg)]()
 [![License](https://img.shields.io/badge/license-GPL--3.0-green.svg)](LICENSE)
 [![Author](https://img.shields.io/badge/author-phoenixlucky-orange.svg)]()
 [![CI](https://github.com/phoenixlucky/zerotoken-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/phoenixlucky/zerotoken-skill/actions/workflows/ci.yml)
@@ -124,7 +124,7 @@
 |---|---|
 | [`windows-powershell.md`](references/windows-powershell.md) | F 模式：15 条已知陷阱 + 脚本工具表 + 推荐工作流 + 安全读写模板 |
 | [`refactor-playbook.md`](references/refactor-playbook.md) | E 模式：根因诊断 → 影响面 → 方案确认 → 增量迁移 → 收尾 |
-| [`search.md`](references/search.md) | 搜索资料规范：入口探测顺序、禁用行为、Windows 调用注意 |
+| [`search.md`](references/search.md) | 搜索资料规范：仅用已注册工具、显式授权桥、数据外发提示、禁用行为 |
 | [`tool-mapping.md`](references/tool-mapping.md) | 工具名跨宿主映射、宿主 verification 循环、plan/todo 注册行为 |
 | [`publishing-clawhub.md`](references/publishing-clawhub.md) | 维护者手册：C1-C6 发布陷阱 + 固定发布时序 |
 
@@ -143,7 +143,7 @@
 - ⚔️ **AI 编程总纲（尉缭子十原则）** — 完整十原则与 System Prompt 总纲见 [SKILL.md「AI 编程总纲」](SKILL.md#-ai-编程总纲尉缭子十原则)
 - ⚡ **ZeroToken 强化模式** — 更激进的压缩规则见 [SKILL.md「ZeroToken 强化模式」](SKILL.md#-zerotoken-强化模式)
 - 🚫 **何时退出 ZeroToken** — 教学/头脑风暴/深度研究自动切详尽模式，见 [SKILL.md「何时不使用 ZeroToken」](SKILL.md#-何时不使用-zerotoken)
-- 🔍 **搜索资料规范** — 浏览器桥优先、抓取工具兜底，见 [`references/search.md`](references/search.md)
+- 🔍 **搜索资料规范** — 已注册工具优先、抓取工具兜底，见 [`references/search.md`](references/search.md)
 - 📜 **Unicode 安全编码规范** — 文本统一 UTF-8（`.ps1` 例外带 BOM），见 [`docs/unicode-encoding-spec.md`](docs/unicode-encoding-spec.md)
 
 ---

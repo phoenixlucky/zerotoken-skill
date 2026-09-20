@@ -1,6 +1,6 @@
 ---
 name: zerotoken-skill
-version: 1.14.0
+version: 1.16.0
 description: Token-efficient assistant discipline for concise, direct answers and minimal-context task execution. Use when the user asks for low-token / direct output or says「省 token / 简洁点 / 直接给结果 / 少废话 / 别解释」, or invokes this skill; includes optional file-encoding and Windows PowerShell utilities (single entry: `python scripts/zt.py help`).
 metadata:
   security:

@@ -3,9 +3,11 @@ audit_encoding.py — 全项目编码合规审计（对照 Unicode 安全编码�
 
 检查项：
 1. 每个文本文件的编码（UTF-8 无 BOM / UTF-8 带 BOM / UTF-16 / 其他）
-2. 替换字符 U+FFFD 计数（编码损坏痕迹）
-3. 混合换行符（LF/CRLF）统计
-4. 二进制文件识别（跳过，不检查内容）
+2. BOM 合规：`.ps1` 必须 UTF-8 with BOM，其余文本必须无 BOM
+   （见 docs/unicode-encoding-spec.md「PowerShell 脚本（.ps1）」）
+3. 替换字符 U+FFFD 计数（编码损坏痕迹）
+4. 混合换行符（LF/CRLF）统计
+5. 二进制文件识别（跳过，不检查内容）
 
 输出：UTF-8 文件，避免终端 GBK 乱码。
 用法：
@@ -16,6 +18,10 @@ import argparse
 import json
 import os
 from typing import Dict, List, Tuple
+
+from safe_io import ensure_utf8_stdio, safe_print, safe_write
+
+ensure_utf8_stdio()
 
 TEXT_EXTS = {
     '.md', '.txt', '.py', '.yaml', '.yml', '.json', '.toml',
@@ -120,6 +126,13 @@ def main() -> int:
             problems.append(f'[非UTF-8] {rel}')
             continue
 
+        # BOM 规则：.ps1 必须带 BOM，其余文本必须无 BOM
+        if ext == '.ps1':
+            if enc != 'utf-8-sig':
+                problems.append(f'[缺少BOM] {rel}: .ps1 必须 UTF-8 with BOM')
+        elif enc == 'utf-8-sig':
+            problems.append(f'[意外BOM] {rel}: 非 .ps1 文本必须 UTF-8 无 BOM')
+
         text = raw.decode('utf-8-sig' if enc == 'utf-8-sig' else 'utf-8')
         rep = text.count('\ufffd')
         if rep > 0:
@@ -139,11 +152,10 @@ def main() -> int:
             'problems': problems,
         }, ensure_ascii=False, indent=2)
         if args.out:
-            with open(args.out, 'w', encoding='utf-8', newline='\n') as f:
-                f.write(payload + '\n')
-            print(f'json written to: {os.path.abspath(args.out)}')
+            safe_write(args.out, payload + '\n')
+            safe_print(f'json written to: {os.path.abspath(args.out)}')
         else:
-            print(payload)
+            safe_print(payload)
         return 0 if not problems else 1
 
     lines.append(f'文本文件: {sum(stats.values())}  二进制/跳过: {binary_count}')
@@ -160,11 +172,10 @@ def main() -> int:
 
     content = '\n'.join(lines) + '\n'
     out_path = args.out or 'audit_result.txt'
-    with open(out_path, 'w', encoding='utf-8', newline='\n') as f:
-        f.write(content)
+    safe_write(out_path, content)
 
     # 用 write_result 同款方式提示绝对路径（避免终端打印中文）
-    print(f'audit written to: {os.path.abspath(out_path)}')
+    safe_print(f'audit written to: {os.path.abspath(out_path)}')
     return 0 if not problems else 1
 
 

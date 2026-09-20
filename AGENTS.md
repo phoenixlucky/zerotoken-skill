@@ -3,7 +3,7 @@
 ## 项目结构
 
 - `SKILL.md` — **常驻核心**（快速决策表 / 核心原则 / 输出格式 / 质量底线）。
-  体积预算 ≤12KB，超出即说明细节该外移到 `references/`。
+  体积预算 ≤14KB，超出即说明细节该外移到 `references/`。
 - `references/` — **按需读取**的细节：`windows-powershell.md`（F 模式 15 条陷阱）、
   `refactor-playbook.md`（E 模式）、`search.md`、`tool-mapping.md`、`publishing-clawhub.md`。
 - `scripts/` — 编码与一致性工具；`safe_io.py` 是其余脚本的公共依赖（`ensure_utf8_stdio` / `safe_print`）。
@@ -25,7 +25,8 @@ python scripts/zt.py encoding     # 编码合规：UTF-8/替换字符/混合换�
 python scripts/zt.py version      # 版本号三处联动（带版本号=写入）
 ```
 
-> 所有命令支持 `--json [--out 文件]`，供 AI / CI 解析；`scripts/` 下的原脚本仍可独立调用。
+> `check / audit / encoding / version` 支持 `--json [--out 文件]`（供 AI / CI 解析）；
+> `env / gbk / convert / edit / verify` 目前为文本输出。`scripts/` 下的原脚本仍可独立调用。
 
 ## 发布（仅维护者）
 

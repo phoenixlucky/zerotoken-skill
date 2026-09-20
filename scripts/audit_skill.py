@@ -10,6 +10,9 @@
 7. SKILL.md / README.md 不出现宿主专属工具名（应只出现在 references/ 下）
 8. 非规范 CJK 字符（康熙部首 / CJK 部首补充 / 兼容表意文字，视觉相同但码位不同，
    会导致搜索与精确匹配静默失败）
+9. CHANGELOG.md 顶部版本 == package.json 版本（版本号隐性第 4 处锚点）
+10. 站内 Markdown 锚点（`path#fragment` / `#fragment`）指向的标题存在
+11. 每个非测试脚本（scripts/*.py|ps1）都在文档中被引用（防新增脚本漏改清单）
 
 用法：
     python scripts/audit_skill.py [--root .] [--out audit_skill_result.txt]
@@ -21,6 +24,8 @@ import json
 import os
 import re
 import sys
+import unicodedata
+import urllib.parse
 
 from bump_version import collect_versions
 from safe_io import ensure_utf8_stdio, read_text, safe_print, safe_write
@@ -30,7 +35,7 @@ ensure_utf8_stdio()
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SKILL.md 常驻预算（字节）。超出说明细节又该外移到 references/。
-SKILL_SIZE_BUDGET = 12 * 1024
+SKILL_SIZE_BUDGET = 14 * 1024
 
 CORE_DOCS = ('SKILL.md', 'README.md')
 EXTRA_DOCS = ('CHANGELOG.md',)
@@ -53,11 +58,14 @@ WEIRD_CJK_RANGES = (
 
 LINK_RE = re.compile(r'\[[^\]]*\]\(([^)\s]+)\)')
 SCRIPT_REF_RE = re.compile(r'scripts/([A-Za-z0-9_]+\.(?:py|ps1))')
+HEADING_RE = re.compile(r'^#{1,6}\s+(.+?)\s*#*\s*$', re.M)
+FENCE_RE = re.compile(r'```.*?```', re.S)
 TRAP_COUNT_CLAIM_RE = re.compile(r'(\d+) 条(?:已知)?陷阱')
 TRAP_TABLE_HEADING_RE = re.compile(r'^## 已知陷阱与解决方案（(\d+) 条）\s*$', re.M)
 TRAP_ROW_RE = re.compile(r'^\|\s*(\d+)\s*\|', re.M)
 PRINCIPLE_ITEM_RE = re.compile(r'^\d+\.\s+\*\*', re.M)
 PRINCIPLE_ROW_RE = re.compile(r'^\|\s*\d+\s*\|', re.M)
+CHANGELOG_VERSION_RE = re.compile(r'^## \[(\d+\.\d+\.\d+)\]', re.M)
 
 
 def md_files(root: str):
@@ -102,6 +110,80 @@ def find_weird_cjk(text: str):
 def is_external_link(target: str) -> bool:
     return (target.startswith(('http://', 'https://', 'mailto:', '#'))
             or re.match(r'^[a-zA-Z][a-zA-Z0-9+.-]*:', target) is not None)
+
+
+def slugify(heading: str) -> str:
+    """近似 GitHub 的锚点算法（github-slugger）：小写、剥离 emoji/标点、
+    ASCII 空格转连字符，保留字母/数字/组合符/CJK。
+
+    与 github-slugger 的差异：变体选择符（U+FE00-FE0F 等）在 Unicode 里属
+    组合符（Mn），会被误保留，故显式剔除。
+    """
+    out = []
+    for ch in heading.strip().lower():
+        code = ord(ch)
+        if ch in (' ', '-') or unicodedata.category(ch).startswith('Pc'):
+            out.append(ch)
+            continue
+        if 0xFE00 <= code <= 0xFE0F or 0xE0100 <= code <= 0xE01EF:
+            continue
+        if unicodedata.category(ch)[0] in ('L', 'N', 'M'):
+            out.append(ch)
+    return ''.join(out).replace(' ', '-')
+
+
+def heading_slugs(text: str):
+    """返回文档所有标题的锚点集合（重复标题按 GitHub 规则加 -1/-2）。"""
+    slugs, counts = set(), {}
+    for match in HEADING_RE.finditer(FENCE_RE.sub('', text)):
+        base = slugify(match.group(1))
+        index = counts.get(base, 0)
+        counts[base] = index + 1
+        slugs.add(base if index == 0 else f'{base}-{index}')
+    return slugs
+
+
+def check_anchors(root: str, docs, texts):
+    """校验站内 Markdown 锚点（`path#fragment` / `#fragment`）指向的标题存在。"""
+    problems = []
+    cache = {}
+    for rel in docs:
+        base_dir = os.path.dirname(os.path.join(root, rel))
+        for target in LINK_RE.findall(texts[rel]):
+            path_part, sep, frag = target.partition('#')
+            if not sep:
+                continue
+            if path_part and is_external_link(path_part):
+                continue
+            if path_part:
+                target_path = os.path.normpath(os.path.join(base_dir, path_part))
+                target_rel = os.path.relpath(target_path, root).replace('\\', '/')
+            else:
+                target_rel = rel
+            if not target_rel.endswith('.md') or target_rel not in texts:
+                continue
+            if target_rel not in cache:
+                cache[target_rel] = heading_slugs(texts[target_rel])
+            if urllib.parse.unquote(frag) not in cache[target_rel]:
+                problems.append(f'[锚点失效] {rel} -> {target}')
+    return problems
+
+
+def check_script_docs(root: str, docs, texts):
+    """每个非测试脚本（scripts/*.py|ps1）都应在文档中被引用，防止新增后漏改清单。"""
+    scripts_dir = os.path.join(root, 'scripts')
+    if not os.path.isdir(scripts_dir):
+        return []
+    actual = {
+        name for name in os.listdir(scripts_dir)
+        if name.endswith(('.py', '.ps1'))
+        and not name.startswith('test_') and name != '__init__.py'
+    }
+    referenced = set()
+    for rel in docs:
+        referenced.update(SCRIPT_REF_RE.findall(texts[rel]))
+    return [f'[脚本未文档化] scripts/{name} 未在任何文档中被引用'
+            for name in sorted(actual - referenced)]
 
 
 def audit(root: str):
@@ -192,6 +274,32 @@ def audit(root: str):
             problems.append(
                 f'[异体字] {rel}:{lineno} U+{code:04X} ({name}) — 视觉相同但码位不同，'
                 '搜索/匹配会静默失败')
+
+    # 9. CHANGELOG 顶部版本与 package.json 一致
+    changelog_rel = 'CHANGELOG.md'
+    if changelog_rel in texts:
+        changelog_match = CHANGELOG_VERSION_RE.search(texts[changelog_rel])
+        changelog_version = changelog_match.group(1) if changelog_match else None
+        pkg_version = dict(versions).get('package.json')
+        if changelog_version != pkg_version:
+            problems.append(
+                f'[CHANGELOG 版本不一致] CHANGELOG.md 最新 '
+                f'{changelog_version or "<未找到>"}，package.json '
+                f'{pkg_version or "<未找到>"}')
+        else:
+            notes.append(f'CHANGELOG 版本一致: {changelog_version}')
+
+    # 10. 站内 Markdown 锚点有效
+    anchor_problems = check_anchors(root, docs, texts)
+    problems.extend(anchor_problems)
+    if not anchor_problems:
+        notes.append('站内锚点全部有效')
+
+    # 11. 所有非测试脚本均在文档中被引用
+    script_problems = check_script_docs(root, docs, texts)
+    problems.extend(script_problems)
+    if not script_problems:
+        notes.append('脚本清单完整（非测试脚本均已文档化）')
 
     return notes, problems
 

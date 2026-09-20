@@ -1,0 +1,21 @@
+# https://editorconfig.org
+# 与 .gitattributes / docs/unicode-encoding-spec.md 保持一致的编辑器侧约束。
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Markdown 行尾双空格是合法硬换行，不清理
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{bat,cmd}]
+end_of_line = crlf
+
+# .ps1 必须 UTF-8 with BOM；BOM 不由 editorconfig 100% 保证，
+# 最终由 audit_encoding.py 校验（见 docs/unicode-encoding-spec.md）。
+[*.ps1]
+charset = utf-8-bom

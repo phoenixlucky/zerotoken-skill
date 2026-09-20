@@ -65,11 +65,20 @@ COMMANDS = {
                ('python scripts/zt.py verify "检查项" out.txt --pass "✓ 通过"',)),
 }
 
+# check 的动态步骤：scripts/test_*.py 自动发现（新增测试无需手改本文件）
+def discover_tests():
+    """返回 [(说明, 脚本名, 参数)]，按文件名排序。"""
+    return [
+        (f'回归测试：{name}', name, ())
+        for name in sorted(
+            n for n in os.listdir(SCRIPTS_DIR)
+            if n.startswith('test_') and n.endswith('.py'))
+    ]
+
+
 # check 的步骤：(说明, 脚本, 参数)
 CHECK_STEPS = (
-    ('回归测试：safe_io 编码检测', 'test_safe_io.py', ()),
-    ('回归测试：detect_env 环境探测', 'test_detect_env.py', ()),
-    ('回归测试：bump_version 版本联动', 'test_bump_version.py', ()),
+    *discover_tests(),
     ('编码合规审计', 'audit_encoding.py', None),   # None -> 运行时注入临时 --out
     ('文档一致性审计', 'audit_skill.py', ()),
     ('版本号三处联动', 'bump_version.py', ('--check',)),

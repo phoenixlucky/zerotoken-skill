@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.16.0] - 2026-09-20
+
+### Added
+- `scripts/audit_skill.py` 新增第 10/11 项检查：站内 Markdown 锚点有效性
+  （近似 github-slugger 规则还原锚点，兼容 emoji 标题）、每个非测试脚本
+  必须在文档中被引用（`scripts/test_*.py` 豁免，防新增脚本漏改清单）。
+- `scripts/test_zt.py` 回归测试（测试自动发现、路由退出码、help 输出）。
+- `package.json` 补 `repository` / `homepage` / `bugs` 元数据。
+
+### Fixed
+- README 指向 `SKILL.md` 的 4 个锚点失效：片段带了 emoji，而 GitHub 生成锚点时会
+  剥离 emoji（`#⚔️-ai-…` 实际应为 `#-ai-…`）；现由 audit_skill 锚点检查长期兜住。
+
+### Changed
+- README 深度瘦身（19304 B -> 10632 B，-45%）：新增目录；合并重复的安装方式；
+  把「场景详解 A-G」「尉缭子十原则全文」「搜索 / 编码 / 提示词 / 强化模式」等
+  `SKILL.md` / `references/` 的副本改为摘要 + 入口（消除双份事实源）；
+  平台小节由 6 张卡片改为一张表；新增 CI 状态徽章；
+  修正「五种主流 Agent 工具」与 6 个小节的口径。
+- `assets/zerotoken-banner.webp` 重压为 720x1080 / q72：582 KB -> 165 KB（-72%）。
+
+## [1.15.0] - 2026-09-20
+
+### Added
+- `scripts/audit_skill.py` 新增第 9 项检查：CHANGELOG.md 顶部版本必须等于
+  `package.json` 版本（版本号隐性第 4 处锚点，此前无机器校验）。
+- 回归测试 `scripts/test_audit_skill.py` / `scripts/test_audit_encoding.py`
+  （合规 fixture 通过 + 注入缺陷命中），回归测试 3 -> 5 个。
+- `.editorconfig`：charset / eol / final-newline 的编辑器侧约束，与 `.gitattributes`
+  及编码规范一致；`.ps1` 标注 `utf-8-bom`。
+- `package.json` 增 `scripts.check`（等价 `python scripts/zt.py check`）。
+
+### Fixed
+- `scripts/audit_encoding.py` 纳入 BOM 规则校验：`.ps1` 必须 UTF-8 with BOM，
+  其余文本必须无 BOM（此前只统计不判违规）。
+- `scripts/audit_encoding.py` 改走 `safe_io`（`ensure_utf8_stdio` / `safe_print` /
+  `safe_write`），消除「工具不守自身编码规范」的漂移。
+
+### Changed
+- `SKILL.md` 常驻体积预算 12KB -> 14KB（`audit_skill.py` 的 `SKILL_SIZE_BUDGET`），
+  并同步 `AGENTS.md` / `README.md` 口径；实占 12194 B，此前仅余 94 B。
+- `AGENTS.md` 修正「所有命令支持 `--json`」的表述：实际仅
+  `check / audit / encoding / version` 支持，其余命令为文本输出。
+- `scripts/zt.py` 的 `check` 步骤改为自动发现 `scripts/test_*.py`，新增测试无需手改入口。
+
 ## [1.14.0] - 2026-09-15
 
 ### Added
